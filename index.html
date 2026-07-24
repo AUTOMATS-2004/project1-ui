@@ -54,7 +54,6 @@
       padding-bottom: 80px;
     }
 
-    /* Top Industrial Hazard Stripe */
     .hazard-stripe {
       height: 6px;
       width: 100%;
@@ -71,7 +70,6 @@
       z-index: 1000;
     }
 
-    /* Header */
     header {
       margin-top: 6px;
       padding: 16px 20px;
@@ -126,7 +124,6 @@
       box-shadow: 0 0 6px var(--green);
     }
 
-    /* Nav Tabs Bar */
     .nav-tabs {
       display: flex;
       background: var(--bg-dark);
@@ -161,7 +158,6 @@
       background: linear-gradient(180deg, transparent, var(--amber-glow));
     }
 
-    /* Container Views */
     .view-container {
       padding: 16px;
       max-width: 800px;
@@ -177,7 +173,6 @@
       display: block;
     }
 
-    /* Common Card Styles */
     .task-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -245,7 +240,6 @@
       border: 1px solid rgba(29, 209, 161, 0.3);
     }
 
-    /* Tree View Styles */
     .tree-node {
       margin-left: 0px;
       position: relative;
@@ -281,7 +275,6 @@
       align-items: center;
     }
 
-    /* Smart Folders Styles */
     .tag-filter-bar {
       display: flex;
       gap: 8px;
@@ -313,7 +306,6 @@
       border-color: var(--blue);
     }
 
-    /* Team Pool Styles */
     .claim-btn {
       width: 100%;
       margin-top: 10px;
@@ -340,7 +332,6 @@
       color: var(--bg-dark);
     }
 
-    /* Floating Action Button (FAB) */
     .fab {
       position: fixed;
       bottom: 24px;
@@ -365,7 +356,6 @@
       transform: scale(0.9);
     }
 
-    /* Modal Overlay & Drawer */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -431,7 +421,6 @@
       cursor: pointer;
     }
 
-    /* Form Inputs inside Modal */
     .form-group {
       margin-bottom: 14px;
     }
@@ -466,7 +455,6 @@
       min-height: 60px;
     }
 
-    /* Tag detector container */
     .detected-tags-container {
       display: flex;
       flex-wrap: wrap;
@@ -475,7 +463,6 @@
       min-height: 24px;
     }
 
-    /* Template Generator Button */
     .btn-template {
       width: 100%;
       background: rgba(72, 219, 251, 0.08);
@@ -497,7 +484,6 @@
       background: var(--blue-glow);
     }
 
-    /* Sub-task List Builder */
     .subtask-builder-input {
       display: flex;
       gap: 8px;
@@ -550,7 +536,6 @@
       opacity: 0.9;
     }
 
-    /* Task Detail Modal Specifics */
     .detail-section {
       margin-bottom: 14px;
     }
@@ -578,10 +563,8 @@
 </head>
 <body>
 
-  <!-- Top Hazard Stripe Bar -->
   <div class="hazard-stripe"></div>
 
-  <!-- App Header -->
   <header>
     <div class="brand">
       <div class="brand-icon"></div>
@@ -590,40 +573,29 @@
     <div class="user-badge" id="user-badge">TG User</div>
   </header>
 
-  <!-- Navigation Tabs -->
   <nav class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('tree')">🌳 Tree View</button>
     <button class="tab-btn" onclick="switchTab('folders')">🏷️ Smart Folders</button>
     <button class="tab-btn" onclick="switchTab('pool')">🛠️ Team Pool</button>
   </nav>
 
-  <!-- View Container -->
   <main class="view-container">
-    
-    <!-- Tab 1: Tree View -->
     <div id="view-tree" class="tab-content active">
       <div id="tree-root"></div>
     </div>
 
-    <!-- Tab 2: Smart Folders -->
     <div id="view-folders" class="tab-content">
-      <div class="tag-filter-bar" id="tag-filter-bar">
-        <!-- Dynamic Tag Chips -->
-      </div>
+      <div class="tag-filter-bar" id="tag-filter-bar"></div>
       <div id="smart-folder-tasks"></div>
     </div>
 
-    <!-- Tab 3: Team Pool -->
     <div id="view-pool" class="tab-content">
       <div id="team-pool-tasks"></div>
     </div>
-
   </main>
 
-  <!-- Floating Action Button -->
   <button class="fab" id="fab-add" onclick="openCreateModal()">+</button>
 
-  <!-- Task Creator Modal -->
   <div class="modal-overlay" id="modal-create">
     <div class="modal-drawer">
       <div class="drawer-header">
@@ -650,12 +622,10 @@
           </select>
         </div>
 
-        <!-- Template Generator -->
         <button type="button" class="btn-template" onclick="applyGearTemplate()">
           ⚙️ Add Gear Manufacturing Sequence
         </button>
 
-        <!-- Dynamic Sub-tasks Adder -->
         <div class="form-group">
           <label class="form-label">Sub-Tasks / Operations</label>
           <div class="subtask-builder-input">
@@ -670,7 +640,6 @@
     </div>
   </div>
 
-  <!-- Task Detail Modal -->
   <div class="modal-overlay" id="modal-detail">
     <div class="modal-drawer">
       <div class="drawer-header">
@@ -682,10 +651,8 @@
   </div>
 
   <script>
-    // --- LIVE CLOUDFLARE WORKER ENDPOINT ---
     const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
 
-    // --- Telegram WebApp SDK Integration ---
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
@@ -698,38 +665,40 @@
       if (type === 'notification') tg.HapticFeedback.notificationOccurred(style);
     }
 
-    // Set User Name in Header
     const userBadge = document.getElementById('user-badge');
     if (tg?.initDataUnsafe?.user) {
       userBadge.innerText = `@${tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name}`;
     }
 
-    // --- State Management ---
     let tasks = [];
     let currentSelectedFilter = "#all";
     let pendingSubtasks = [];
 
-    // --- Fetch Live Data on Page Load ---
     document.addEventListener('DOMContentLoaded', () => {
       fetchLiveTasks();
     });
 
     async function fetchLiveTasks() {
       const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
       try {
         const response = await fetch(`${WORKER_API_URL}/api/tasks`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'X-Telegram-Init-Data': initData
+            'X-Telegram-Init-Data': initData,
+            'X-Telegram-User-Id': String(userId)
           }
         });
 
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`Fetch Error: ${response.status} - ${errText}`);
+          return;
+        }
         
         const data = await response.json();
-        
-        // Flatten Worker tree data into local schema
         const flatList = [];
         function flattenTree(nodes) {
           nodes.forEach(node => {
@@ -756,8 +725,7 @@
           renderAllViews();
         }
       } catch (err) {
-        console.warn("Could not fetch live tasks from worker. Waiting for submit:", err);
-        renderAllViews();
+        console.warn("Fetch exception:", err);
       }
     }
 
@@ -768,7 +736,6 @@
       populateParentDropdown();
     }
 
-    // --- Navigation Tabs ---
     function switchTab(tabId) {
       triggerHaptic('impact', 'light');
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -786,7 +753,6 @@
       }
     }
 
-    // --- 1. Tree View Implementation ---
     function renderTree() {
       const treeRoot = document.getElementById('tree-root');
       treeRoot.innerHTML = '';
@@ -857,7 +823,6 @@
       }
     }
 
-    // --- 2. Smart Folders Implementation ---
     function renderFolders() {
       const filterBar = document.getElementById('tag-filter-bar');
       const container = document.getElementById('smart-folder-tasks');
@@ -901,7 +866,6 @@
       renderFolders();
     }
 
-    // --- 3. Team Pool Implementation ---
     function renderPool() {
       const container = document.getElementById('team-pool-tasks');
       const unassignedTasks = tasks.filter(t => !t.assignee);
@@ -941,7 +905,6 @@
       }
     }
 
-    // --- Quick Task Creator Modal Logic ---
     function openCreateModal() {
       triggerHaptic('impact', 'medium');
       document.getElementById('modal-create').classList.add('active');
@@ -1019,7 +982,7 @@
       renderSubtaskListUI();
     }
 
-    // --- Submit Task Payload to Worker ---
+    // --- Submit Task Payload with EXPLICIT POPUP ALERTS ---
     async function handleTaskSubmit(e) {
       e.preventDefault();
       triggerHaptic('notification', 'success');
@@ -1044,29 +1007,32 @@
       };
 
       const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
 
       try {
         const response = await fetch(`${WORKER_API_URL}/api/tasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Telegram-Init-Data': initData
+            'X-Telegram-Init-Data': initData,
+            'X-Telegram-User-Id': String(userId)
           },
           body: JSON.stringify(newTask)
         });
 
         if (response.ok) {
+          alert("✅ SUCCESS: Task saved to Google Sheets!");
           closeCreateModal();
-          await fetchLiveTasks(); // Instantly refresh live tasks from Google Sheets
+          await fetchLiveTasks();
         } else {
-          alert("Submission failed. Check Cloudflare Worker authorization.");
+          const errorText = await response.text();
+          alert(`❌ SERVER ERROR (${response.status}):\n${errorText}`);
         }
       } catch (err) {
-        console.error("Task submission error:", err);
+        alert(`❌ NETWORK/JS ERROR:\n${err.message}`);
       }
     }
 
-    // --- Task Detail Modal Logic ---
     function openDetailModal(taskId) {
       triggerHaptic('impact', 'medium');
       const task = tasks.find(t => t.id === taskId);
