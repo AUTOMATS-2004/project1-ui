@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Industrial Workflow Mini App</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Typography: JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f1115;
+      --card-bg: #161920;
+      --card-bg-hover: #1f242e;
+      --border-color: #2a2f3d;
+      --border-accent: #3b4254;
+      
+      --amber: #ff9f43;
+      --amber-glow: rgba(255, 159, 67, 0.15);
+      --green: #1dd1a1;
+      --green-glow: rgba(29, 209, 161, 0.15);
+      --blue: #48dbfb;
+      --blue-glow: rgba(72, 219, 251, 0.15);
+      --red: #ff6b6b;
+      
+      --text-main: #f0f3f8;
+      --text-muted: #8a93a5;
+      
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: 80px;
+    }
+
+    /* Top Industrial Hazard Stripe */
+    .hazard-stripe {
+      height: 6px;
+      width: 100%;
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--amber),
+        var(--amber) 12px,
+        #0f1115 12px,
+        #0f1115 24px
+      );
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+
+    /* Header */
+    header {
+      margin-top: 6px;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 12px;
+      height: 12px;
+      background: var(--amber);
+      box-shadow: 0 0 10px var(--amber);
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .user-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+      background: var(--blue-glow);
+      border: 1px solid rgba(72, 219, 251, 0.3);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .user-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* Nav Tabs Bar */
+    .nav-tabs {
+      display: flex;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 100;
+      padding: 0 10px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px 8px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--amber);
+      border-bottom-color: var(--amber);
+      background: linear-gradient(180deg, transparent, var(--amber-glow));
+    }
+
+    /* Container Views */
+    .view-container {
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Common Card Styles */
+    .task-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .task-card:active {
+      background: var(--card-bg-hover);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(72, 219, 251, 0.1);
+      color: var(--blue);
+      border: 1px solid rgba(72, 219, 251, 0.2);
+    }
+
+    .badge-status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .status-unassigned {
+      background: rgba(255, 159, 67, 0.1);
+      color: var(--amber);
+      border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+
+    .status-assigned {
+      background: rgba(29, 209, 161, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(29, 209, 161, 0.3);
+    }
+
+    /* Tree View Styles */
+    .tree-node {
+      margin-left: 0px;
+      position: relative;
+    }
+
+    .tree-children {
+      margin-left: 18px;
+      padding-left: 10px;
+      border-left: 2px dashed var(--border-color);
+      display: block;
+    }
+
+    .tree-children.collapsed {
+      display: none;
+    }
+
+    .tree-toggle {
+      font-family: var(--font-mono);
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      color: var(--amber);
+      font-size: 12px;
+      margin-right: 4px;
+    }
+
+    .tree-item-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Smart Folders Styles */
+    .tag-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+
+    .tag-filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .filter-chip.active {
+      background: var(--blue-glow);
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+
+    /* Team Pool Styles */
+    .claim-btn {
+      width: 100%;
+      margin-top: 10px;
+      background: var(--amber-glow);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .claim-btn:active {
+      background: var(--amber);
+      color: var(--bg-dark);
+    }
+
+    /* Floating Action Button (FAB) */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: var(--bg-dark);
+      border: none;
+      box-shadow: 0 4px 20px rgba(255, 159, 67, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 500;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .fab:active {
+      transform: scale(0.9);
+    }
+
+    /* Modal Overlay & Drawer */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 17, 21, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-drawer {
+      background: var(--card-bg);
+      border-top: 2px solid var(--amber);
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-overlay.active .modal-drawer {
+      transform: translateY(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .drawer-title {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Form Inputs inside Modal */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--amber);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    /* Tag detector container */
+    .detected-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      min-height: 24px;
+    }
+
+    /* Template Generator Button */
+    .btn-template {
+      width: 100%;
+      background: rgba(72, 219, 251, 0.08);
+      border: 1px dashed var(--blue);
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-template:active {
+      background: var(--blue-glow);
+    }
+
+    /* Sub-task List Builder */
+    .subtask-builder-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .subtask-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .subtask-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-dark);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .subtask-item button {
+      background: transparent;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--amber);
+      color: var(--bg-dark);
+      border: none;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 16px;
+    }
+
+    .btn-submit:active {
+      opacity: 0.9;
+    }
+
+    /* Task Detail Modal Specifics */
+    .detail-section {
+      margin-bottom: 14px;
+    }
+
+    .detail-section-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .dependency-pill {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-accent);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Hazard Stripe Bar -->
+  <div class="hazard-stripe"></div>
+
+  <!-- App Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon"></div>
+      <div class="brand-title">IND-WORKFLOW v2.4</div>
+    </div>
+    <div class="user-badge" id="user-badge">TG User</div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tree')">🌳 Tree View</button>
+    <button class="tab-btn" onclick="switchTab('folders')">🏷️ Smart Folders</button>
+    <button class="tab-btn" onclick="switchTab('pool')">🛠️ Team Pool</button>
+  </nav>
+
+  <!-- View Container -->
+  <main class="view-container">
+    
+    <!-- Tab 1: Tree View -->
+    <div id="view-tree" class="tab-content active">
+      <div id="tree-root"></div>
+    </div>
+
+    <!-- Tab 2: Smart Folders -->
+    <div id="view-folders" class="tab-content">
+      <div class="tag-filter-bar" id="tag-filter-bar">
+        <!-- Dynamic Tag Chips -->
+      </div>
+      <div id="smart-folder-tasks"></div>
+    </div>
+
+    <!-- Tab 3: Team Pool -->
+    <div id="view-pool" class="tab-content">
+      <div id="team-pool-tasks"></div>
+    </div>
+
+  </main>
+
+  <!-- Floating Action Button -->
+  <button class="fab" id="fab-add" onclick="openCreateModal()">+</button>
+
+  <!-- Task Creator Modal -->
+  <div class="modal-overlay" id="modal-create">
+    <div class="modal-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">⚡ Quick Task Creator</div>
+        <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+      </div>
+
+      <form id="create-task-form" onsubmit="handleTaskSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" id="task-title-input" class="form-input" placeholder="e.g. Assemble Main Engine #urgent" required oninput="handleTextChange()" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="task-desc-input" class="form-textarea" placeholder="Add details or #tags like #report-pending..." oninput="handleTextChange()"></textarea>
+          <div class="detected-tags-container" id="detected-tags"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Parent Task (Optional Hierarchy)</label>
+          <select id="parent-task-select" class="form-select">
+            <option value="">None (Top-Level Task)</option>
+          </select>
+        </div>
+
+        <!-- Template Generator -->
+        <button type="button" class="btn-template" onclick="applyGearTemplate()">
+          ⚙️ Add Gear Manufacturing Sequence
+        </button>
+
+        <!-- Dynamic Sub-tasks Adder -->
+        <div class="form-group">
+          <label class="form-label">Sub-Tasks / Operations</label>
+          <div class="subtask-builder-input">
+            <input type="text" id="subtask-input" class="form-input" placeholder="New sub-task..." />
+            <button type="button" class="form-input" style="width: auto; background: var(--border-accent); cursor: pointer;" onclick="addManualSubtask()">Add</button>
+          </div>
+          <ul class="subtask-list" id="subtask-list-ui"></ul>
+        </div>
+
+        <button type="submit" class="btn-submit">Dispatch Payload to Worker</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Task Detail Modal -->
+  <div class="modal-overlay" id="modal-detail">
+    <div class="modal-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title" id="detail-title">Task Details</div>
+        <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- LIVE CLOUDFLARE WORKER ENDPOINT ---
+    const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
+
+    // --- Telegram WebApp SDK Integration ---
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    function triggerHaptic(type = 'impact', style = 'medium') {
+      if (!tg?.HapticFeedback) return;
+      if (type === 'impact') tg.HapticFeedback.impactOccurred(style);
+      if (type === 'notification') tg.HapticFeedback.notificationOccurred(style);
+    }
+
+    // Set User Name in Header
+    const userBadge = document.getElementById('user-badge');
+    if (tg?.initDataUnsafe?.user) {
+      userBadge.innerText = `@${tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name}`;
+    }
+
+    // --- State Management ---
+    let tasks = [];
+    let currentSelectedFilter = "#all";
+    let pendingSubtasks = [];
+
+    // --- Fetch Live Data on Page Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLiveTasks();
+    });
+
+    async function fetchLiveTasks() {
+      const initData = tg?.initData || '';
+      try {
+        const response = await fetch(`${WORKER_API_URL}/api/tasks`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-Init-Data': initData
+          }
+        });
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Flatten Worker tree data into local schema
+        const flatList = [];
+        function flattenTree(nodes) {
+          nodes.forEach(node => {
+            flatList.push({
+              id: node.taskId,
+              parentId: node.parentId || null,
+              title: node.title,
+              description: node.description,
+              status: node.status,
+              assignee: (node.assignedPhone === 'Unassigned' || !node.assignedPhone) ? null : node.assignedPhone,
+              tags: node.tags || [],
+              dependencies: node.dependencies || [],
+              subtasks: node.children ? node.children.map(c => c.title) : []
+            });
+            if (node.children && node.children.length > 0) {
+              flattenTree(node.children);
+            }
+          });
+        }
+
+        if (data.tree) {
+          flattenTree(data.tree);
+          tasks = flatList;
+          renderAllViews();
+        }
+      } catch (err) {
+        console.warn("Could not fetch live tasks from worker. Waiting for submit:", err);
+        renderAllViews();
+      }
+    }
+
+    function renderAllViews() {
+      renderTree();
+      renderFolders();
+      renderPool();
+      populateParentDropdown();
+    }
+
+    // --- Navigation Tabs ---
+    function switchTab(tabId) {
+      triggerHaptic('impact', 'light');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if(tabId === 'tree') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('view-tree').classList.add('active');
+      } else if(tabId === 'folders') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('view-folders').classList.add('active');
+      } else if(tabId === 'pool') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('view-pool').classList.add('active');
+      }
+    }
+
+    // --- 1. Tree View Implementation ---
+    function renderTree() {
+      const treeRoot = document.getElementById('tree-root');
+      treeRoot.innerHTML = '';
+
+      if (tasks.length === 0) {
+        treeRoot.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted); font-family: var(--font-mono);">
+          [ NO TASKS FOUND. CLICK '+' TO CREATE ]
+        </div>`;
+        return;
+      }
+
+      const rootTasks = tasks.filter(t => !t.parentId);
+      rootTasks.forEach(task => {
+        treeRoot.appendChild(createTreeNode(task));
+      });
+    }
+
+    function createTreeNode(task) {
+      const node = document.createElement('div');
+      node.className = 'tree-node';
+
+      const children = tasks.filter(t => t.parentId === task.id);
+      const hasChildren = children.length > 0;
+
+      const cardWrapper = document.createElement('div');
+      cardWrapper.className = 'tree-item-wrapper';
+
+      cardWrapper.innerHTML = `
+        <div class="task-card" style="flex:1" onclick="openDetailModal('${task.id}')">
+          <div class="task-header">
+            <span class="tree-toggle" onclick="toggleTree(event, '${task.id}')">${hasChildren ? '▼' : '▪'}</span>
+            <span class="task-title" style="flex:1">${task.title}</span>
+            <span class="badge-status ${task.assignee ? 'status-assigned' : 'status-unassigned'}">
+              ${task.assignee ? task.assignee : 'UNASSIGNED'}
+            </span>
+          </div>
+          <div class="task-meta">
+            ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono)">
+              Sub-tasks: ${task.subtasks.length}
+            </span>
+          </div>
+        </div>
+      `;
+
+      node.appendChild(cardWrapper);
+
+      if (hasChildren) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+        childrenContainer.id = `children-${task.id}`;
+        children.forEach(child => {
+          childrenContainer.appendChild(createTreeNode(child));
+        });
+        node.appendChild(childrenContainer);
+      }
+
+      return node;
+    }
+
+    function toggleTree(event, taskId) {
+      event.stopPropagation();
+      triggerHaptic('impact', 'light');
+      const container = document.getElementById(`children-${taskId}`);
+      if (container) {
+        container.classList.toggle('collapsed');
+        event.target.innerText = container.classList.contains('collapsed') ? '▶' : '▼';
+      }
+    }
+
+    // --- 2. Smart Folders Implementation ---
+    function renderFolders() {
+      const filterBar = document.getElementById('tag-filter-bar');
+      const container = document.getElementById('smart-folder-tasks');
+
+      const allTags = new Set();
+      tasks.forEach(t => t.tags.forEach(tag => allTags.add(tag)));
+
+      filterBar.innerHTML = `<div class="filter-chip ${currentSelectedFilter === '#all' ? 'active' : ''}" onclick="filterByTag('#all')">#ALL TASKS</div>`;
+      
+      allTags.forEach(tag => {
+        const chip = document.createElement('div');
+        chip.className = `filter-chip ${currentSelectedFilter === tag ? 'active' : ''}`;
+        chip.innerText = tag;
+        chip.onclick = () => filterByTag(tag);
+        filterBar.appendChild(chip);
+      });
+
+      const filteredTasks = currentSelectedFilter === '#all' 
+        ? tasks 
+        : tasks.filter(t => t.tags.includes(currentSelectedFilter));
+
+      container.innerHTML = filteredTasks.map(task => `
+        <div class="task-card" onclick="openDetailModal('${task.id}')">
+          <div class="task-header">
+            <div class="task-title">${task.title}</div>
+            <span class="badge-status ${task.assignee ? 'status-assigned' : 'status-unassigned'}">
+              ${task.assignee ? task.assignee : 'UNASSIGNED'}
+            </span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">${task.description}</div>
+          <div class="task-meta">
+            ${task.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterByTag(tag) {
+      triggerHaptic('impact', 'light');
+      currentSelectedFilter = tag;
+      renderFolders();
+    }
+
+    // --- 3. Team Pool Implementation ---
+    function renderPool() {
+      const container = document.getElementById('team-pool-tasks');
+      const unassignedTasks = tasks.filter(t => !t.assignee);
+
+      if (unassignedTasks.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted); font-family: var(--font-mono);">
+          [ ALL TASKS CLAIMED ]
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = unassignedTasks.map(task => `
+        <div class="task-card">
+          <div class="task-header">
+            <div class="task-title">${task.title}</div>
+            <span class="badge-status status-unassigned">UNASSIGNED</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">${task.description}</div>
+          <div class="task-meta">
+            ${task.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
+          <button class="claim-btn" onclick="claimTask('${task.id}')">
+            ⚡ Claim Task
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function claimTask(taskId) {
+      triggerHaptic('notification', 'success');
+      const user = tg?.initDataUnsafe?.user?.first_name || "CurrentUser";
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        task.assignee = user;
+        task.status = "assigned";
+        renderAllViews();
+      }
+    }
+
+    // --- Quick Task Creator Modal Logic ---
+    function openCreateModal() {
+      triggerHaptic('impact', 'medium');
+      document.getElementById('modal-create').classList.add('active');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('modal-create').classList.remove('active');
+      resetForm();
+    }
+
+    function handleTextChange() {
+      const title = document.getElementById('task-title-input').value;
+      const desc = document.getElementById('task-desc-input').value;
+      const fullText = title + " " + desc;
+
+      const tagRegex = /#[\w-]+/g;
+      const detected = fullText.match(tagRegex) || [];
+      const uniqueTags = [...new Set(detected)];
+
+      const container = document.getElementById('detected-tags');
+      container.innerHTML = uniqueTags.map(tag => `<span class="tag">${tag}</span>`).join('');
+    }
+
+    function applyGearTemplate() {
+      triggerHaptic('impact', 'light');
+      const sequence = ["Turning", "Milling", "Gear Hobbing", "Heat Treatment", "QC Report"];
+      pendingSubtasks = [...sequence];
+      renderSubtaskListUI();
+      
+      const titleInput = document.getElementById('task-title-input');
+      if (!titleInput.value) {
+        titleInput.value = "Gear Manufacturing Sequence #cnc #qc";
+        handleTextChange();
+      }
+    }
+
+    function addManualSubtask() {
+      const input = document.getElementById('subtask-input');
+      if (input.value.trim()) {
+        triggerHaptic('impact', 'light');
+        pendingSubtasks.push(input.value.trim());
+        input.value = '';
+        renderSubtaskListUI();
+      }
+    }
+
+    function removeSubtask(index) {
+      triggerHaptic('impact', 'light');
+      pendingSubtasks.splice(index, 1);
+      renderSubtaskListUI();
+    }
+
+    function renderSubtaskListUI() {
+      const list = document.getElementById('subtask-list-ui');
+      list.innerHTML = pendingSubtasks.map((st, i) => `
+        <li class="subtask-item">
+          <span>⚙️ ${st}</span>
+          <button type="button" onclick="removeSubtask(${i})">&times;</button>
+        </li>
+      `).join('');
+    }
+
+    function populateParentDropdown() {
+      const select = document.getElementById('parent-task-select');
+      select.innerHTML = '<option value="">None (Top-Level Task)</option>';
+      tasks.forEach(t => {
+        select.innerHTML += `<option value="${t.id}">${t.title}</option>`;
+      });
+    }
+
+    function resetForm() {
+      document.getElementById('create-task-form').reset();
+      document.getElementById('detected-tags').innerHTML = '';
+      pendingSubtasks = [];
+      renderSubtaskListUI();
+    }
+
+    // --- Submit Task Payload to Worker ---
+    async function handleTaskSubmit(e) {
+      e.preventDefault();
+      triggerHaptic('notification', 'success');
+
+      const title = document.getElementById('task-title-input').value;
+      const description = document.getElementById('task-desc-input').value;
+      const parentId = document.getElementById('parent-task-select').value || null;
+      
+      const fullText = title + " " + description;
+      const tags = [...new Set(fullText.match(/#[\w-]+/g) || [])];
+
+      const newTask = {
+        taskId: `TSK-${Date.now()}`,
+        title,
+        description,
+        parentId,
+        tags: tags.length ? tags : ["#general"],
+        status: "Pending",
+        assignedPhone: "Unassigned",
+        subtasks: [...pendingSubtasks],
+        dependencies: parentId ? [parentId] : []
+      };
+
+      const initData = tg?.initData || '';
+
+      try {
+        const response = await fetch(`${WORKER_API_URL}/api/tasks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-Init-Data': initData
+          },
+          body: JSON.stringify(newTask)
+        });
+
+        if (response.ok) {
+          closeCreateModal();
+          await fetchLiveTasks(); // Instantly refresh live tasks from Google Sheets
+        } else {
+          alert("Submission failed. Check Cloudflare Worker authorization.");
+        }
+      } catch (err) {
+        console.error("Task submission error:", err);
+      }
+    }
+
+    // --- Task Detail Modal Logic ---
+    function openDetailModal(taskId) {
+      triggerHaptic('impact', 'medium');
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('detail-title').innerText = task.id;
+      const content = document.getElementById('detail-content');
+
+      const parentTask = tasks.find(t => t.id === task.parentId);
+      const childTasks = tasks.filter(t => t.parentId === task.id);
+
+      content.innerHTML = `
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">${task.title}</div>
+        <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 14px;">${task.description || 'No description provided.'}</div>
+        
+        <div class="detail-section">
+          <div class="detail-section-title">Status & Assignee</div>
+          <span class="badge-status ${task.assignee ? 'status-assigned' : 'status-unassigned'}">
+            ${task.assignee ? `Assigned to: ${task.assignee}` : 'UNASSIGNED'}
+          </span>
+        </div>
+
+        ${parentTask ? `
+          <div class="detail-section">
+            <div class="detail-section-title">Parent Task Dependency</div>
+            <div class="dependency-pill">⬆️ ${parentTask.title}</div>
+          </div>
+        ` : ''}
+
+        ${childTasks.length ? `
+          <div class="detail-section">
+            <div class="detail-section-title">Connected Child Operations</div>
+            ${childTasks.map(c => `<div class="dependency-pill">⬇️ ${c.title}</div>`).join('')}
+          </div>
+        ` : ''}
+
+        ${task.subtasks.length ? `
+          <div class="detail-section">
+            <div class="detail-section-title">Sub-Tasks Checklist</div>
+            <ul style="list-style: none; margin-top: 6px;">
+              ${task.subtasks.map(s => `
+                <li style="font-size: 12px; padding: 4px 0; border-bottom: 1px dotted var(--border-color); display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" /> <span>${s}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('modal-detail').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('modal-detail').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
