@@ -43,18 +43,18 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    /* 55PX TOP OFFSET TO POSITION THE APP CLEANLY BELOW TELEGRAM'S NATIVE TOP BAR */
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: var(--font-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding-top: max(55px, var(--tg-safe-area-inset-top, 55px)) !important;
-      padding-bottom: 80px;
-    }
-
+    /* 1. INCREASED TOP PADDING TO 85PX TO CLEAR TELEGRAM'S NATIVE CLOSE BUTTON */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 85px !important;
+  padding-bottom: 80px;
+}
+    
     /* Top Brand Header Bar */
     header {
       padding: 10px 16px;
@@ -76,26 +76,28 @@
 
     /* Universal Deep Search Bar */
     .search-bar-container {
-      padding: 8px 14px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      gap: 6px;
-      position: relative;
-      z-index: 950;
-    }
+  padding: 8px 12px;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 950;
+  transition: all 0.2s ease;
+}
 
     .search-bar-container.compact-hidden { display: none; }
 
     .nav-primary {
-      display: flex;
-      align-items: center;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 2px 8px;
-      position: relative;
-      z-index: 900;
-    }
+  display: flex;
+  align-items: center;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  position: relative;
+  z-index: 900;
+}
 
     .primary-tab { flex: 1; padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; text-align: center; }
     .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
