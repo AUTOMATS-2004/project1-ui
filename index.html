@@ -44,7 +44,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-dark); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
-    /* Ultra-Slim Header */
     header {
       padding: 8px 14px;
       background: var(--bg-dark);
@@ -58,16 +57,13 @@
       transition: all 0.2s ease;
     }
 
-    header.compact-hidden {
-      display: none;
-    }
+    header.compact-hidden { display: none; }
 
     .header-brand { display: flex; align-items: center; gap: 8px; }
     .gemini-spark { width: 12px; height: 12px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 3px; box-shadow: 0 0 10px rgba(124, 77, 255, 0.5); }
     .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
     .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 2px 8px; border-radius: 12px; }
 
-    /* Collapsible Search Container */
     .search-bar-container {
       padding: 6px 14px;
       background: var(--bg-dark);
@@ -80,9 +76,7 @@
       transition: all 0.2s ease;
     }
 
-    .search-bar-container.compact-hidden {
-      display: none;
-    }
+    .search-bar-container.compact-hidden { display: none; }
 
     .nav-primary {
       display: flex;
@@ -122,13 +116,13 @@
     .item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
     .progress-container { margin-top: 8px; }
-    .progress-info { display: flex; justify-style: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
+    .progress-info { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
     .progress-track { height: 5px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
     .step-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
     .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; position: relative; }
-    .step-header { display: flex; justify-style: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .step-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
     .step-title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
 
     .badge-status { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
@@ -416,6 +410,7 @@
       tg.expand();
       if (tg.setHeaderColor) tg.setHeaderColor('#131314');
       if (tg.setBackgroundColor) tg.setBackgroundColor('#131314');
+      if (tg.requestFullscreen) tg.requestFullscreen();
     }
 
     const userBadge = document.getElementById('user-pill');
@@ -447,7 +442,67 @@
       { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
     ];
 
+    /* ==========================================================================
+       TELEGRAM NATIVE BACK BUTTON & ANDROID BACK GESTURE ENGINE
+       ========================================================================== */
+    function updateNativeBackButton() {
+      if (!tg || !tg.BackButton) return;
+
+      const activeModal = document.querySelector('.modal-overlay.active');
+      if (activeModal) {
+        tg.BackButton.show();
+        return;
+      }
+
+      if (currentPrimaryTab === 'tree' && currentFolderId !== 'root') {
+        tg.BackButton.show();
+        return;
+      }
+
+      if (currentPrimaryTab === 'others' && selectedCategoryDrillDownId !== null) {
+        tg.BackButton.show();
+        return;
+      }
+
+      tg.BackButton.hide();
+    }
+
+    function handleBackNavigation() {
+      const activeModal = document.querySelector('.modal-overlay.active');
+      if (activeModal) {
+        activeModal.classList.remove('active');
+        updateNativeBackButton();
+        return;
+      }
+
+      if (currentPrimaryTab === 'tree' && currentFolderId !== 'root') {
+        const currentFolder = folders.find(f => f.id === currentFolderId);
+        const parentId = currentFolder ? (currentFolder.parentId || 'root') : 'root';
+        navToFolder(parentId);
+        return;
+      }
+
+      if (currentPrimaryTab === 'others' && selectedCategoryDrillDownId !== null) {
+        drillBackToOthersRoot();
+        return;
+      }
+    }
+
+    if (tg && tg.BackButton) {
+      tg.BackButton.onClick(() => { handleBackNavigation(); });
+    }
+
+    window.addEventListener('popstate', (e) => {
+      e.preventDefault();
+      handleBackNavigation();
+    });
+
+    function pushHistoryState() {
+      history.pushState({ page: 'matrix' }, '', location.href);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      pushHistoryState();
       fetchLiveData();
     });
 
@@ -493,6 +548,7 @@
       renderScheduleContent();
       renderOthersContent();
       updateSubNavVisibility();
+      updateNativeBackButton();
     }
 
     function switchPrimaryTab(tab) {
@@ -503,9 +559,9 @@
       event.target.classList.add('active');
       document.getElementById(`page-${tab}`).classList.add('active');
       updateSubNavVisibility();
+      updateNativeBackButton();
     }
 
-    // Toggle Header & Search Compact Mode
     function toggleHeaderCompactMode() {
       subNavExpanded = !subNavExpanded;
       const topHeader = document.getElementById('top-header');
@@ -551,6 +607,7 @@
 
     function openFilterSortModal() {
       document.getElementById('modal-filter-sort').classList.add('active');
+      updateNativeBackButton();
     }
 
     function fileToBase64(file) {
@@ -591,7 +648,6 @@
       return data.fileUrl;
     }
 
-    /* Long-Press Listener Engine */
     function attachLongPressListener(element, type, id, title) {
       let timer = null;
 
@@ -612,6 +668,7 @@
       activeContextItem = { type, id, title };
       document.getElementById('context-item-title').innerText = `${type.toUpperCase()}: ${title}`;
       document.getElementById('modal-context-menu').classList.add('active');
+      updateNativeBackButton();
     }
 
     async function handleContextAction(action) {
@@ -635,7 +692,6 @@
       }
     }
 
-    /* Edit Modals */
     function openFullEditFolderModal(folderId) {
       const folder = folders.find(f => f.id === folderId);
       if (!folder) return;
@@ -644,6 +700,7 @@
       document.getElementById('modal-folder-title-header').innerText = `Edit Folder: ${folder.name}`;
       document.getElementById('input-folder-name').value = folder.name;
       document.getElementById('modal-folder').classList.add('active');
+      updateNativeBackButton();
     }
 
     function openFullEditJobCardModal(jobId) {
@@ -661,6 +718,7 @@
       builderSteps = JSON.parse(JSON.stringify(job.steps));
       renderStepsBuilder();
       document.getElementById('modal-job-editor').classList.add('active');
+      updateNativeBackButton();
     }
 
     function openFullEditStepModal(stepId) {
@@ -685,6 +743,7 @@
       }
 
       document.getElementById('modal-step-editor').classList.add('active');
+      updateNativeBackButton();
     }
 
     async function saveIndividualStepEdit(e) {
@@ -819,522 +878,4 @@
       return list;
     }
 
-    /* RENDER TREE VIEW */
     function renderTreeFolderContent() {
-      const container = document.getElementById('tree-items-container');
-      const navControls = document.getElementById('tree-nav-controls');
-      container.innerHTML = '';
-      navControls.innerHTML = '';
-
-      const currentFolder = folders.find(f => f.id === currentFolderId);
-      if (currentFolder && currentFolder.parentId) {
-        const parentFolder = folders.find(f => f.id === currentFolder.parentId) || { name: 'Root', id: 'root' };
-        navControls.innerHTML = `<button class="btn-back" onclick="navToFolder('${parentFolder.id}')">⬅️ Back to ${parentFolder.name}</button>`;
-      }
-
-      const breadcrumbs = document.getElementById('tree-breadcrumbs');
-      breadcrumbs.innerHTML = `<span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>`;
-      
-      let path = getFolderPath(currentFolderId);
-      path.forEach(f => {
-        if (f.id !== 'root') breadcrumbs.innerHTML += ` ➔ <span class="breadcrumb-item" onclick="navToFolder('${f.id}')">${f.name}</span>`;
-      });
-
-      let subFolders = folders.filter(f => f.parentId === currentFolderId);
-      let currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
-
-      if (searchQuery) {
-        container.innerHTML += `<div style="font-size:11px; color:var(--accent-teal); margin-bottom:8px;">🔍 Deep Search matching: "${searchQuery}"</div>`;
-        
-        subFolders = folders.filter(f => f.name.toLowerCase().includes(searchQuery));
-        currentJobs = jobCards.filter(job => {
-          const titleMatch = job.title.toLowerCase().includes(searchQuery);
-          const stepMatch = job.steps.some(s => 
-            s.title.toLowerCase().includes(searchQuery) ||
-            s.notes.toLowerCase().includes(searchQuery) ||
-            s.assignee.toLowerCase().includes(searchQuery) ||
-            s.attachmentUrl.toLowerCase().includes(searchQuery)
-          );
-          return titleMatch || stepMatch;
-        });
-
-        if (!subFolders.length && !currentJobs.length) {
-          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--accent-red); font-weight:600;">⚠️ No search results found matching "${searchQuery}"</div>`;
-          return;
-        }
-      }
-
-      currentJobs = getFilteredAndSortedJobs(currentJobs);
-
-      subFolders.forEach(folder => {
-        const item = document.createElement('div');
-        item.className = 'folder-item';
-
-        item.innerHTML = `
-          <div class="folder-header">
-            <div class="folder-title-group" onclick="navToFolder('${folder.id}')" style="cursor:pointer; flex:1;">
-              <span>📁</span>
-              <span class="item-title">${folder.name}</span>
-            </div>
-            <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span>
-          </div>`;
-
-        attachLongPressListener(item, 'folder', folder.id, folder.name);
-        container.appendChild(item);
-      });
-
-      currentJobs.forEach(job => container.appendChild(createJobCardElement(job)));
-
-      if (!subFolders.length && !currentJobs.length) {
-        container.innerHTML += `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">[ Folder Empty ]</div>`;
-      }
-    }
-
-    function navToFolder(id) { currentFolderId = id; renderTreeFolderContent(); }
-
-    function getFolderPath(folderId) {
-      let path = [], current = folders.find(f => f.id === folderId);
-      while (current) { path.unshift(current); current = folders.find(f => f.id === current.parentId); }
-      return path;
-    }
-
-    function createJobCardElement(job) {
-      const card = document.createElement('div');
-      card.className = 'job-card-item';
-
-      const completed = job.steps.filter(s => s.status === 'Completed').length;
-      const total = job.steps.length;
-      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-      card.innerHTML = `
-        <div class="job-header">
-          <div class="job-title-group">
-            <span>⚙️</span>
-            <span class="item-title">${job.title}</span>
-          </div>
-          <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditJobCardModal('${job.id}')">✏️ Edit</span>
-        </div>
-        <div class="progress-container">
-          <div class="progress-info"><span>Progress</span><span>${pct}% (${completed}/${total})</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: ${pct}%;"></div></div>
-        </div>
-        <div class="step-list">${job.steps.map(s => createStepHTML(s)).join('')}</div>
-      `;
-
-      attachLongPressListener(card, 'job', job.id, job.title);
-      return card;
-    }
-
-    function createStepHTML(step) {
-      if (currentAssigneeFilter !== 'ALL' && step.assignee !== currentAssigneeFilter) return '';
-      const statusClass = `status-${step.status.toLowerCase().replace(/\s+/g, '')}`;
-
-      return `
-        <div class="step-card">
-          <div class="step-header">
-            <span class="step-title">${step.title}</span>
-            <div style="display:flex; gap:6px; align-items:center;">
-              <span class="badge-status ${statusClass}" onclick="cycleStepStatusForward('${step.id}')">${step.status}</span>
-              <span style="font-size:10px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditStepModal('${step.id}')">✏️</span>
-            </div>
-          </div>
-          <div class="step-meta">
-            <span class="meta-pill meta-assignee">👤 ${step.assignee || 'UNASSIGNED'}</span>
-            ${step.date ? `<span class="meta-pill">📅 ${step.date} ${step.time || ''}</span>` : ''}
-            ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" class="meta-pill" style="color:var(--accent-blue); text-decoration:none;">📎 PDF/Image Document</a>` : ''}
-            ${step.notes ? `<div style="width:100%; font-size:10px; color:var(--text-muted); margin-top:3px;">📝 ${step.notes}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    async function cycleStepStatusForward(stepId) {
-      const forwardSequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
-      let targetStep = null;
-
-      jobCards.forEach(j => j.steps.forEach(s => {
-        if (s.id === stepId) {
-          const currentIndex = forwardSequence.indexOf(s.status);
-          const nextIndex = (currentIndex + 1) % forwardSequence.length;
-          s.status = forwardSequence[nextIndex];
-          targetStep = s;
-        }
-      }));
-
-      renderAll();
-
-      if (targetStep) {
-        const initData = tg?.initData || '';
-        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-        try {
-          await fetch(`${WORKER_API_URL}/api/steps`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Telegram-Init-Data': initData,
-              'X-Telegram-User-Id': String(userId)
-            },
-            body: JSON.stringify({ stepId: targetStep.id, status: targetStep.status, title: targetStep.title })
-          });
-        } catch (e) { console.error("Patch status error:", e); }
-      }
-    }
-
-    function renderScheduleContent() {
-      const container = document.getElementById('schedule-items-container');
-      container.innerHTML = '';
-      let allSteps = [];
-      jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title, folderId: j.folderId })));
-
-      if (currentAssigneeFilter !== 'ALL') allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
-
-      if (searchQuery) {
-        allSteps = allSteps.filter(s => 
-          s.title.toLowerCase().includes(searchQuery) ||
-          s.notes.toLowerCase().includes(searchQuery) ||
-          s.jobTitle.toLowerCase().includes(searchQuery)
-        );
-      }
-
-      if (!allSteps.length) {
-        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">[ No operations scheduled ]</div>`;
-        return;
-      }
-
-      allSteps.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'job-card-item';
-        card.innerHTML = `<div style="font-size:10px; color:var(--accent-purple); margin-bottom:3px;">${s.jobTitle}</div>${createStepHTML(s)}`;
-        container.appendChild(card);
-      });
-    }
-
-    function renderOthersContent() {
-      const container = document.getElementById('others-items-container');
-      const controls = document.getElementById('others-category-controls');
-      container.innerHTML = '';
-      controls.innerHTML = '';
-
-      if (selectedCategoryDrillDownId) {
-        const currentCat = customOthersCategories.find(c => c.id === selectedCategoryDrillDownId);
-        controls.innerHTML = `
-          <button class="btn-back" onclick="drillBackToOthersRoot()">⬅️ Back to OTHERS Categories</button>
-          <div style="display:flex; gap:6px; margin-bottom:12px;">
-            <button class="chip-btn" onclick="openCategoryPicker('${currentCat.id}', '${currentCat.title}')">+ Add Job/Step</button>
-          </div>
-        `;
-
-        let matchingSteps = [];
-        jobCards.forEach(j => j.steps.forEach(s => {
-          if (s.category === selectedCategoryDrillDownId) matchingSteps.push({ ...s, jobTitle: j.title });
-        }));
-
-        if (!matchingSteps.length) {
-          container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted);">[ No operations assigned to ${currentCat.title} ]</div>`;
-          return;
-        }
-
-        matchingSteps.forEach(s => {
-          const card = document.createElement('div');
-          card.className = 'job-card-item';
-          card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span style="font-size:10px; color:var(--accent-purple);">${s.jobTitle}</span>
-              <button class="chip-btn" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="removeStepFromCategory('${s.id}')">➖ Remove</button>
-            </div>
-            ${createStepHTML(s)}
-          `;
-          container.appendChild(card);
-        });
-
-      } else {
-        controls.innerHTML = `<button class="chip-btn" style="margin-bottom:12px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
-
-        container.innerHTML = customOthersCategories.map(cat => {
-          let count = 0;
-          jobCards.forEach(j => j.steps.forEach(s => { if (s.category === cat.id) count++; }));
-
-          return `
-            <div class="folder-item" onclick="drillIntoCategory('${cat.id}')">
-              <div class="folder-header">
-                <div class="folder-title-group">
-                  <span>${cat.emoji}</span>
-                  <span class="item-title">${cat.title}</span>
-                </div>
-                <span style="font-size:11px; color:var(--accent-teal);">${count} Items ➔</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    function drillIntoCategory(catId) {
-      selectedCategoryDrillDownId = catId;
-      renderOthersContent();
-    }
-
-    function drillBackToOthersRoot() {
-      selectedCategoryDrillDownId = null;
-      renderOthersContent();
-    }
-
-    async function removeStepFromCategory(stepId) {
-      let targetStep = null;
-      jobCards.forEach(j => j.steps.forEach(s => {
-        if (s.id === stepId) {
-          s.category = '';
-          targetStep = s;
-        }
-      }));
-
-      renderOthersContent();
-
-      if (targetStep) {
-        const initData = tg?.initData || '';
-        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-        try {
-          await fetch(`${WORKER_API_URL}/api/steps`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-            body: JSON.stringify({ stepId: targetStep.id, category: '' })
-          });
-        } catch (e) {}
-      }
-    }
-
-    function openCategoryPicker(catId, catTitle) {
-      activeTargetCategoryId = catId;
-      document.getElementById('category-picker-title').innerText = `Add Operation to: ${catTitle}`;
-      document.getElementById('category-search-input').value = '';
-      renderCategoryPickerList();
-      document.getElementById('modal-category-picker').classList.add('active');
-    }
-
-    function renderCategoryPickerList() {
-      const query = document.getElementById('category-search-input').value.toLowerCase().trim();
-      const resultsContainer = document.getElementById('category-picker-results');
-      resultsContainer.innerHTML = '';
-
-      let allSteps = [];
-      jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title })));
-
-      if (query) {
-        allSteps = allSteps.filter(s => s.title.toLowerCase().includes(query) || s.jobTitle.toLowerCase().includes(query));
-      }
-
-      allSteps.forEach(s => {
-        const item = document.createElement('div');
-        item.className = 'picker-item';
-        item.innerHTML = `<strong>${s.title}</strong> <span style="font-size:10px; color:var(--accent-purple);">(${s.jobTitle})</span>`;
-        item.onclick = () => assignStepToCategory(s.id);
-        resultsContainer.appendChild(item);
-      });
-    }
-
-    async function assignStepToCategory(stepId) {
-      closeModal('modal-category-picker');
-      let targetStep = null;
-      jobCards.forEach(j => j.steps.forEach(s => {
-        if (s.id === stepId) {
-          s.category = activeTargetCategoryId;
-          targetStep = s;
-        }
-      }));
-
-      renderOthersContent();
-
-      if (targetStep) {
-        const initData = tg?.initData || '';
-        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-        try {
-          await fetch(`${WORKER_API_URL}/api/steps`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-            body: JSON.stringify({ stepId: targetStep.id, category: activeTargetCategoryId, title: targetStep.title })
-          });
-        } catch (e) {}
-      }
-    }
-
-    function openAddCustomRuleModal() {
-      const name = prompt("Enter Custom Category Name (e.g. 🔥 Heat Treatment Queue):");
-      if (name) {
-        customOthersCategories.push({ id: `cat-${Date.now()}`, emoji: '📌', title: name });
-        renderOthersContent();
-      }
-    }
-
-    function openAddFolderModal() {
-      editingFolderId = null;
-      document.getElementById('modal-folder-title-header').innerText = 'New Folder';
-      document.getElementById('input-folder-name').value = '';
-      document.getElementById('modal-folder').classList.add('active');
-    }
-
-    async function saveFolder(e) {
-      e.preventDefault();
-      const name = document.getElementById('input-folder-name').value;
-      const initData = tg?.initData || '';
-      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-
-      try {
-        const res = await fetch(`${WORKER_API_URL}/api/folders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-          body: JSON.stringify({ folderId: editingFolderId, name, parentId: currentFolderId })
-        });
-        if (res.ok) {
-          document.getElementById('input-folder-name').value = '';
-          editingFolderId = null;
-          closeModal('modal-folder');
-          await fetchLiveData();
-        } else {
-          const errText = await res.text();
-          alert(`Folder Save Error (${res.status}):\n${errText}`);
-        }
-      } catch (err) { alert(`Network error: ${err.message}`); }
-    }
-
-    function openAddJobCardModal() {
-      editingJobId = null;
-      document.getElementById('modal-job-title-header').innerText = 'New Job Card & Process Chart';
-      document.getElementById('input-job-title').value = '';
-
-      const select = document.getElementById('select-job-folder');
-      select.innerHTML = '';
-      folders.forEach(f => select.innerHTML += `<option value="${f.id}" ${f.id === currentFolderId ? 'selected' : ''}>${f.name}</option>`);
-
-      builderSteps = [];
-      addRichStepInput();
-      document.getElementById('modal-job-editor').classList.add('active');
-    }
-
-    function addRichStepInput() {
-      builderSteps.push({
-        id: '',
-        title: '',
-        assignee: 'UNASSIGNED',
-        status: 'Not Started',
-        date: '',
-        time: '',
-        attachmentUrl: '',
-        linkedJob: '',
-        notes: ''
-      });
-      renderStepsBuilder();
-    }
-
-    function removeBuilderStep(idx) {
-      builderSteps.splice(idx, 1);
-      renderStepsBuilder();
-    }
-
-    function renderStepsBuilder() {
-      const list = document.getElementById('steps-builder-list');
-      list.innerHTML = builderSteps.map((s, idx) => `
-        <div class="builder-step-card">
-          <div style="display:flex; justify-style:space-between; align-items:center;">
-            <strong style="font-size:11px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
-            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
-          </div>
-
-          <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
-
-          <div style="display:flex; gap:6px;">
-            <div style="flex:1;">
-              <label class="form-label">Assignee</label>
-              <select class="form-select" onchange="builderSteps[${idx}].assignee = this.value">
-                <option value="UNASSIGNED" ${s.assignee==='UNASSIGNED'?'selected':''}>UNASSIGNED</option>
-                <option value="JEEVAN" ${s.assignee==='JEEVAN'?'selected':''}>JEEVAN</option>
-                <option value="RAVI KUMAR" ${s.assignee==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option>
-                <option value="SANANTH" ${s.assignee==='SANANTH'?'selected':''}>SANANTH</option>
-                <option value="ALL" ${s.assignee==='ALL'?'selected':''}>ALL</option>
-              </select>
-            </div>
-            <div style="flex:1;">
-              <label class="form-label">Initial Status</label>
-              <select class="form-select" onchange="builderSteps[${idx}].status = this.value">
-                <option value="Not Started" ${s.status==='Not Started'?'selected':''}>Not Started</option>
-                <option value="In Progress" ${s.status==='In Progress'?'selected':''}>In Progress</option>
-                <option value="In Hold" ${s.status==='In Hold'?'selected':''}>In Hold</option>
-                <option value="Completed" ${s.status==='Completed'?'selected':''}>Completed</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="display:flex; gap:6px;">
-            <div style="flex:1;">
-              <label class="form-label">Calendar / Deadline Date</label>
-              <input type="date" class="form-input" value="${s.date}" onchange="builderSteps[${idx}].date = this.value" />
-            </div>
-            <div style="flex:1;">
-              <label class="form-label">Time</label>
-              <input type="time" class="form-input" value="${s.time}" onchange="builderSteps[${idx}].time = this.value" />
-            </div>
-          </div>
-
-          <input type="text" class="form-input" placeholder="Manufacturing Specs / Notes" value="${s.notes}" oninput="builderSteps[${idx}].notes = this.value" />
-
-          <div>
-            <label class="form-label">Attach File from Device (PDF, Image, Drawing)</label>
-            <input type="file" id="builder-step-file-${idx}" class="form-input" style="background:#ffffff !important; color:#000000 !important;" />
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function saveJobCard(e) {
-      e.preventDefault();
-      const title = document.getElementById('input-job-title').value;
-      const folderId = document.getElementById('select-job-folder').value;
-      const initData = tg?.initData || '';
-      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-
-      let targetFolderPath = ['DOCUMENTS AND ATTACHMENTS'];
-      let fPath = getFolderPath(folderId);
-      fPath.forEach(f => targetFolderPath.push(f.name));
-      targetFolderPath.push(title);
-
-      for (let i = 0; i < builderSteps.length; i++) {
-        const fileInput = document.getElementById(`builder-step-file-${i}`);
-        if (fileInput && fileInput.files && fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          try {
-            builderSteps[i].attachmentUrl = await uploadSelectedFileToDrive(file, targetFolderPath);
-          } catch (uploadErr) {
-            alert(`File Upload Error on Step #${i + 1}:\n${uploadErr.message}`);
-            return;
-          }
-        }
-      }
-
-      const payload = {
-        jobId: editingJobId,
-        title,
-        folderId,
-        steps: builderSteps
-      };
-
-      try {
-        const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          document.getElementById('input-job-title').value = '';
-          editingJobId = null;
-          closeModal('modal-job-editor');
-          await fetchLiveData();
-        } else {
-          const errText = await res.text();
-          alert(`Job Card Save Error (${res.status}):\n${errText}`);
-        }
-      } catch (err) { alert(`Network error: ${err.message}`); }
-    }
-
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-  </script>
-</body>
-</html>
