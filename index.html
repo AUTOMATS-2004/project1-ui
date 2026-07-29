@@ -112,7 +112,6 @@
     .form-group { margin-bottom: 14px; }
     .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
     
-    /* MANDATORY WHITE BACKGROUND WITH BLACK TEXT FOR ALL SELECTS & INPUTS */
     select.form-select, input.form-input, textarea.form-textarea {
       width: 100%;
       background-color: #ffffff !important;
@@ -150,7 +149,6 @@
     <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
   </header>
 
-  <!-- Universal Deep Search Bar -->
   <div class="search-bar-container">
     <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Search Folders, Jobs, Steps, Specs, Notes, Assignees..." oninput="handleUniversalSearch()" />
     <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
@@ -180,7 +178,6 @@
 
   <main class="view-content">
 
-    <!-- View Page 1: TREE -->
     <div id="page-tree" class="tab-page active">
       <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
@@ -193,12 +190,10 @@
       <div id="tree-items-container"></div>
     </div>
 
-    <!-- View Page 2: SCHEDULE -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
-    <!-- View Page 3: OTHERS (Folder Drill-Down View) -->
     <div id="page-others" class="tab-page">
       <div id="others-category-controls"></div>
       <div id="others-items-container"></div>
@@ -498,7 +493,6 @@
       document.getElementById('modal-filter-sort').classList.add('active');
     }
 
-    /* Helper: Convert File to Base64 */
     function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -511,7 +505,6 @@
       });
     }
 
-    /* Helper: Upload File to Google Drive */
     async function uploadSelectedFileToDrive(file, folderPathArray) {
       const base64Data = await fileToBase64(file);
       const initData = tg?.initData || '';
@@ -531,7 +524,7 @@
       });
 
       if (!res.ok) {
-        throw new Error(`Drive Upload Server Error (${res.status}): ${await res.text()}`);
+        throw new Error(`Drive Upload Error (${res.status}): ${await res.text()}`);
       }
 
       const data = await res.json();
@@ -1238,6 +1231,11 @@
           </div>
 
           <input type="text" class="form-input" placeholder="Manufacturing Specs / Notes" value="${s.notes}" oninput="builderSteps[${idx}].notes = this.value" />
+
+          <div>
+            <label class="form-label">Attach File from Device (PDF, Image, Drawing)</label>
+            <input type="file" id="builder-step-file-${idx}" class="form-input" style="background:#ffffff !important; color:#000000 !important;" />
+          </div>
         </div>
       `).join('');
     }
@@ -1248,6 +1246,25 @@
       const folderId = document.getElementById('select-job-folder').value;
       const initData = tg?.initData || '';
       const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      let targetFolderPath = ['DOCUMENTS AND ATTACHMENTS'];
+      let fPath = getFolderPath(folderId);
+      fPath.forEach(f => targetFolderPath.push(f.name));
+      targetFolderPath.push(title);
+
+      // Process step file uploads if any files were selected
+      for (let i = 0; i < builderSteps.length; i++) {
+        const fileInput = document.getElementById(`builder-step-file-${i}`);
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          try {
+            builderSteps[i].attachmentUrl = await uploadSelectedFileToDrive(file, targetFolderPath);
+          } catch (uploadErr) {
+            alert(`File Upload Error on Step #${i + 1}:\n${uploadErr.message}`);
+            return;
+          }
+        }
+      }
 
       const payload = {
         jobId: editingJobId,
