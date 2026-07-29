@@ -42,36 +42,29 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-dark); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
-    header {
-      padding: 8px 14px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
+    /* SAFE AREA TOP PADDING TO PREVENT OVERLAP WITH TELEGRAM NATIVE CLOSE BUTTON */
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      min-height: 100vh;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      transition: all 0.2s ease;
+      flex-direction: column;
+      padding-top: max(46px, var(--tg-safe-area-inset-top, 46px)) !important;
+      padding-bottom: 80px;
     }
 
-    header.compact-hidden { display: none; }
-
-    .header-brand { display: flex; align-items: center; gap: 8px; }
-    .gemini-spark { width: 12px; height: 12px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 3px; box-shadow: 0 0 10px rgba(124, 77, 255, 0.5); }
-    .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
-    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 2px 8px; border-radius: 12px; }
-
+    /* Streamlined Universal Search & User Header */
     .search-bar-container {
-      padding: 6px 14px;
+      padding: 8px 12px;
       background: var(--bg-dark);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      align-items: center;
       gap: 6px;
       position: sticky;
-      top: 38px;
+      top: max(46px, var(--tg-safe-area-inset-top, 46px));
       z-index: 950;
       transition: all 0.2s ease;
     }
@@ -100,6 +93,8 @@
     .chip-btn { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
     .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); font-weight: 600; }
     .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 6px; }
+
+    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 6px 10px; border-radius: 14px; white-space: nowrap; }
 
     .toggle-subnav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; padding: 0 8px; cursor: pointer; }
 
@@ -175,19 +170,11 @@
 </head>
 <body>
 
-  <!-- Top Slim Header -->
-  <header id="top-header">
-    <div class="header-brand">
-      <div class="gemini-spark"></div>
-      <div class="header-title">TRACE v3.0</div>
-    </div>
-    <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
-  </header>
-
-  <!-- Collapsible Universal Search Bar -->
+  <!-- Universal Deep Search & User Bar (Sitting safely below Telegram Close Button) -->
   <div class="search-bar-container" id="top-search-bar">
-    <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Deep Search Specs, Jobs, Steps, Notes..." oninput="handleUniversalSearch()" />
-    <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
+    <input type="text" id="global-search-input" class="form-input" style="flex:1;" placeholder="🔍 Deep Search Specs, Jobs, Steps, Notes..." oninput="handleUniversalSearch()" />
+    <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
+    <button class="chip-btn" onclick="openFilterSortModal()">⚙️</button>
   </div>
 
   <!-- Primary Tab Bar -->
@@ -442,7 +429,6 @@
       { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
     ];
 
-    /* Native Telegram Back Button & Android Back Gesture Engine */
     function updateNativeBackButton() {
       if (!tg || !tg.BackButton) return;
 
@@ -562,18 +548,15 @@
 
     function toggleHeaderCompactMode() {
       subNavExpanded = !subNavExpanded;
-      const topHeader = document.getElementById('top-header');
       const topSearch = document.getElementById('top-search-bar');
       const subNav = document.getElementById('sub-nav-container');
       const icon = document.getElementById('subnav-toggle-icon');
 
       if (subNavExpanded) {
-        topHeader.classList.remove('compact-hidden');
         topSearch.classList.remove('compact-hidden');
         subNav.classList.remove('collapsed');
         icon.innerText = '▲';
       } else {
-        topHeader.classList.add('compact-hidden');
         topSearch.classList.add('compact-hidden');
         subNav.classList.add('collapsed');
         icon.innerText = '▼';
@@ -1387,7 +1370,7 @@
         const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ jobId: editingJobId, title, folderId, steps: builderSteps })
         });
         if (res.ok) {
           document.getElementById('input-job-title').value = '';
