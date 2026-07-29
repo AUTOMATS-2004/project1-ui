@@ -50,7 +50,19 @@
     .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
     .user-pill { font-size: 11px; font-weight: 500; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 4px 10px; border-radius: 20px; }
 
-    .nav-primary { display: flex; align-items: center; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); padding: 4px 12px; position: sticky; top: 51px; z-index: 900; }
+    /* Sticky Universal Search Bar */
+    .search-bar-container {
+      padding: 10px 18px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 8px;
+      position: sticky;
+      top: 51px;
+      z-index: 950;
+    }
+
+    .nav-primary { display: flex; align-items: center; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); padding: 4px 12px; position: sticky; top: 101px; z-index: 900; }
     .primary-tab { flex: 1; padding: 12px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; text-transform: uppercase; text-align: center; }
     .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 
@@ -69,23 +81,13 @@
     .tab-page { display: none; }
     .tab-page.active { display: block; }
 
-    /* Multi-Select Bulk Action Toolbar */
-    .bulk-toolbar {
-      background: var(--card-bg);
-      border: 1px solid var(--accent-blue);
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .bulk-toolbar { background: var(--card-bg); border: 1px solid var(--accent-blue); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px; display: flex; justify-style: space-between; align-items: center; }
 
     .tree-breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; overflow-x: auto; }
     .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
 
     .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; position: relative; user-select: none; }
-    .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
+    .folder-header, .job-header { display: flex; justify-style: space-between; align-items: center; }
     .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 10px; }
     .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
@@ -96,7 +98,7 @@
 
     .step-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
     .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; position: relative; }
-    .step-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .step-header { display: flex; justify-style: space-between; align-items: flex-start; margin-bottom: 6px; }
     .step-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 
     .badge-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
@@ -122,7 +124,7 @@
     .form-group { margin-bottom: 14px; }
     .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
     
-    /* Explicit Dropdown Color Fix */
+    /* Input & Select Dropdown Color Overrides */
     select.form-select, input.form-input, textarea.form-textarea {
       width: 100%;
       background-color: var(--bg-dark) !important;
@@ -143,18 +145,7 @@
 
     .builder-step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
 
-    /* Context Menu Drawer */
-    .context-menu-option {
-      padding: 14px;
-      border-bottom: 1px solid var(--border-subtle);
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-    }
+    .context-menu-option { padding: 14px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 12px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -166,6 +157,12 @@
     </div>
     <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
   </header>
+
+  <!-- Universal Deep Search Bar -->
+  <div class="search-bar-container">
+    <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Deep Search (Titles, Steps, Specs, Notes, Assignees)..." oninput="handleUniversalSearch()" />
+    <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
+  </div>
 
   <nav class="nav-primary">
     <button class="primary-tab active" onclick="switchPrimaryTab('tree')">TREE</button>
@@ -191,7 +188,6 @@
 
   <main class="view-content">
 
-    <!-- Multi-Select Bulk Toolbar -->
     <div class="bulk-toolbar" id="bulk-toolbar" style="display:none;">
       <span style="font-size:12px; color:var(--accent-blue);" id="bulk-count-text">0 items selected</span>
       <div style="display:flex; gap:6px;">
@@ -201,6 +197,7 @@
       </div>
     </div>
 
+    <!-- View Page 1: TREE -->
     <div id="page-tree" class="tab-page active">
       <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
@@ -209,15 +206,17 @@
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <button class="chip-btn" onclick="openAddFolderModal()">+ New Folder</button>
         <button class="chip-btn" onclick="openAddJobCardModal()">+ New Job Card</button>
-        <button class="chip-btn" onclick="toggleMultiSelectMode()">☑️ Multi-Select Mode</button>
+        <button class="chip-btn" onclick="toggleMultiSelectMode()">☑️ Multi-Select</button>
       </div>
       <div id="tree-items-container"></div>
     </div>
 
+    <!-- View Page 2: SCHEDULE -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
+    <!-- View Page 3: OTHERS -->
     <div id="page-others" class="tab-page">
       <div style="margin-bottom:14px;">
         <button class="chip-btn" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>
@@ -228,7 +227,7 @@
 
   <button class="fab" onclick="openAddJobCardModal()">+</button>
 
-  <!-- Context Menu Drawer (Long-Press / Right-Click) -->
+  <!-- Context Menu Drawer -->
   <div class="modal-overlay" id="modal-context-menu">
     <div class="modal-drawer" style="padding:10px;">
       <div style="text-align:center; padding:8px; font-size:12px; color:var(--text-muted);" id="context-item-title">Item Options</div>
@@ -237,6 +236,47 @@
       <div class="context-menu-option" onclick="handleContextAction('move')">📁 Move to Another Folder</div>
       <div class="context-menu-option" style="color:var(--accent-red);" onclick="handleContextAction('delete')">🗑️ Delete Permanently</div>
       <button class="btn-action" style="background:var(--bg-dark); color:var(--text-muted); margin-top:10px;" onclick="closeModal('modal-context-menu')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Modal: Move Job to Folder Picker -->
+  <div class="modal-overlay" id="modal-move-picker">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <div class="modal-title">Move Job Card</div>
+        <button class="close-btn" onclick="closeModal('modal-move-picker')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select Destination Folder</label>
+        <select id="move-destination-select" class="form-select"></select>
+      </div>
+      <button class="btn-action" onclick="executeMoveJob()">Move Job Card</button>
+    </div>
+  </div>
+
+  <!-- Modal: Filter & Sort Controls -->
+  <div class="modal-overlay" id="modal-filter-sort">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Filter & Sort Options</div>
+        <button class="close-btn" onclick="closeModal('modal-filter-sort')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sort Order</label>
+        <select id="filter-sort-order" class="form-select" onchange="renderAll()">
+          <option value="DATE_ASC">Date Ascending (Earliest First)</option>
+          <option value="DATE_DESC">Date Descending (Latest First)</option>
+          <option value="TITLE_ASC">Title (A-Z)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date Range Scope</label>
+        <div style="display:flex; gap:8px;">
+          <input type="date" id="filter-date-from" class="form-input" onchange="renderAll()" />
+          <input type="date" id="filter-date-to" class="form-input" onchange="renderAll()" />
+        </div>
+      </div>
+      <button class="btn-action" onclick="closeModal('modal-filter-sort')">Apply Filters</button>
     </div>
   </div>
 
@@ -257,11 +297,11 @@
     </div>
   </div>
 
-  <!-- Modal: Job Card & Process Chart Builder -->
+  <!-- Modal: Full Interactive Job Card & Process Chart Builder/Editor -->
   <div class="modal-overlay" id="modal-job-editor">
     <div class="modal-drawer">
       <div class="modal-header">
-        <div class="modal-title">New Job Card & Process Chart</div>
+        <div class="modal-title" id="modal-job-title-header">Job Card & Process Chart</div>
         <button class="close-btn" onclick="closeModal('modal-job-editor')">&times;</button>
       </div>
       <form onsubmit="saveJobCard(event)">
@@ -301,18 +341,20 @@
     let subNavExpanded = true;
     let currentFolderId = 'root';
 
+    let searchQuery = '';
     let multiSelectActive = false;
     let selectedItemIds = new Set();
-    let activeContextItem = null; // { type, id, title }
+    let activeContextItem = null;
+    let editingJobId = null; // null if creating, string if editing
 
     let folders = [{ id: 'root', name: 'Root', parentId: null }];
     let jobCards = [];
     let builderSteps = [];
 
     let customOthersCategories = [
-      { emoji: '🚨', title: 'Overdue Operations' },
-      { emoji: '⭐', title: 'Urgent Priority' },
-      { emoji: '🚚', title: 'Raw Material Pending' }
+      { id: 'cat-overdue', emoji: '🚨', title: 'Overdue Operations' },
+      { id: 'cat-urgent', emoji: '⭐', title: 'Urgent Priority' },
+      { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -390,6 +432,15 @@
       renderAll();
     }
 
+    function handleUniversalSearch() {
+      searchQuery = document.getElementById('global-search-input').value.toLowerCase().trim();
+      renderAll();
+    }
+
+    function openFilterSortModal() {
+      document.getElementById('modal-filter-sort').classList.add('active');
+    }
+
     /* ==========================================================================
        LONG-PRESS & CONTEXT MENU ENGINE
        ========================================================================== */
@@ -397,9 +448,7 @@
       let timer = null;
 
       element.addEventListener('touchstart', (e) => {
-        timer = setTimeout(() => {
-          openContextMenu(type, id, title);
-        }, 600);
+        timer = setTimeout(() => { openContextMenu(type, id, title); }, 600);
       });
 
       element.addEventListener('touchend', () => { if (timer) clearTimeout(timer); });
@@ -426,16 +475,89 @@
           await executeDelete([activeContextItem.id], activeContextItem.type);
         }
       } else if (action === 'edit') {
-        alert(`Editing ${activeContextItem.title}`);
+        if (activeContextItem.type === 'job') {
+          openFullEditJobCardModal(activeContextItem.id);
+        } else if (activeContextItem.type === 'folder') {
+          const newName = prompt("Rename Folder:", activeContextItem.title);
+          if (newName) saveFolderRename(activeContextItem.id, newName);
+        }
       } else if (action === 'move') {
-        alert(`Select destination folder to move ${activeContextItem.title}`);
+        openMoveJobPicker(activeContextItem.id);
       } else if (action === 'copy') {
-        alert(`Duplicating ${activeContextItem.title}`);
+        duplicateJobCard(activeContextItem.id);
       }
     }
 
     /* ==========================================================================
-       MULTI-SELECT & BULK TOOLBAR
+       FULL EDIT & MOVE & COPY ACTIONS
+       ========================================================================== */
+    function openFullEditJobCardModal(jobId) {
+      const job = jobCards.find(j => j.id === jobId);
+      if (!job) return;
+
+      editingJobId = jobId;
+      document.getElementById('modal-job-title-header').innerText = `Edit Job Card: ${job.title}`;
+      document.getElementById('input-job-title').value = job.title;
+
+      const select = document.getElementById('select-job-folder');
+      select.innerHTML = '';
+      folders.forEach(f => select.innerHTML += `<option value="${f.id}" ${f.id === job.folderId ? 'selected' : ''}>${f.name}</option>`);
+
+      builderSteps = JSON.parse(JSON.stringify(job.steps));
+      renderStepsBuilder();
+      document.getElementById('modal-job-editor').classList.add('active');
+    }
+
+    function openMoveJobPicker(jobId) {
+      const select = document.getElementById('move-destination-select');
+      select.innerHTML = '';
+      folders.forEach(f => select.innerHTML += `<option value="${f.id}">${f.name}</option>`);
+      document.getElementById('modal-move-picker').classList.add('active');
+    }
+
+    async function executeMoveJob() {
+      if (!activeContextItem) return;
+      const newFolderId = document.getElementById('move-destination-select').value;
+      closeModal('modal-move-picker');
+
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/jobcards/move`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+          body: JSON.stringify({ jobId: activeContextItem.id, newFolderId })
+        });
+        if (res.ok) await fetchLiveData();
+      } catch (e) { alert("Move network error"); }
+    }
+
+    async function duplicateJobCard(jobId) {
+      const job = jobCards.find(j => j.id === jobId);
+      if (!job) return;
+
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      const duplicatePayload = {
+        title: `Copy of ${job.title}`,
+        folderId: job.folderId,
+        steps: job.steps.map(s => ({ ...s, id: '' }))
+      };
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+          body: JSON.stringify(duplicatePayload)
+        });
+        if (res.ok) await fetchLiveData();
+      } catch (e) { alert("Duplicate network error"); }
+    }
+
+    /* ==========================================================================
+       MULTI-SELECT & BULK ACTIONS
        ========================================================================== */
     function toggleMultiSelectMode() {
       multiSelectActive = !multiSelectActive;
@@ -504,7 +626,7 @@
     }
 
     /* ==========================================================================
-       RENDER TREE VIEW CONTENT
+       RENDER TREE VIEW & DEEP SEARCH
        ========================================================================== */
     function renderTreeFolderContent() {
       const container = document.getElementById('tree-items-container');
@@ -528,12 +650,28 @@
         if (f.id !== 'root') breadcrumbs.innerHTML += ` ➔ <span class="breadcrumb-item" onclick="navToFolder('${f.id}')">${f.name}</span>`;
       });
 
-      // Child Folders
-      const subFolders = folders.filter(f => f.parentId === currentFolderId);
+      // Filter by Search Query if present
+      let subFolders = folders.filter(f => f.parentId === currentFolderId);
+      let currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
+
+      if (searchQuery) {
+        container.innerHTML += `<div style="font-size:12px; color:var(--accent-teal); margin-bottom:10px;">🔍 Search results matching: "${searchQuery}"</div>`;
+        
+        currentJobs = jobCards.filter(job => {
+          const titleMatch = job.title.toLowerCase().includes(searchQuery);
+          const stepMatch = job.steps.some(s => 
+            s.title.toLowerCase().includes(searchQuery) ||
+            s.notes.toLowerCase().includes(searchQuery) ||
+            s.assignee.toLowerCase().includes(searchQuery)
+          );
+          return titleMatch || stepMatch;
+        });
+      }
+
+      // Render Folders
       subFolders.forEach(folder => {
         const item = document.createElement('div');
         item.className = 'folder-item';
-
         const isChecked = selectedItemIds.has(folder.id);
 
         item.innerHTML = `
@@ -543,19 +681,18 @@
               <span>📁</span>
               <span class="item-title">${folder.name}</span>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span>
+            <span style="font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span>
           </div>`;
 
         attachLongPressListener(item, 'folder', folder.id, folder.name);
         container.appendChild(item);
       });
 
-      // Job Cards inside current folder
-      const currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
+      // Render Job Cards
       currentJobs.forEach(job => container.appendChild(createJobCardElement(job)));
 
       if (!subFolders.length && !currentJobs.length) {
-        container.innerHTML += `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">[ Folder Empty ]</div>`;
+        container.innerHTML += `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">[ Folder Empty / No Search Matches ]</div>`;
       }
     }
 
@@ -617,7 +754,7 @@
       `;
     }
 
-    // FORWARD-ONLY STATUS CYCLE: Not Started ➔ In Progress ➔ In Hold ➔ Completed
+    // Forward Status Cycle: Not Started ➔ In Progress ➔ In Hold ➔ Completed
     async function cycleStepStatusForward(stepId) {
       const forwardSequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
       let targetStep = null;
@@ -651,7 +788,12 @@
     }
 
     function openLinkedJob(linkedJobId) {
-      alert(`Jumping to Linked Job: ${linkedJobId}`);
+      const targetJob = jobCards.find(j => j.id === linkedJobId || j.title.toLowerCase().includes(linkedJobId.toLowerCase()));
+      if (targetJob) {
+        openFullEditJobCardModal(targetJob.id);
+      } else {
+        alert(`Linked Job ID "${linkedJobId}" not found.`);
+      }
     }
 
     function renderScheduleContent() {
@@ -661,6 +803,14 @@
       jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title })));
 
       if (currentAssigneeFilter !== 'ALL') allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
+
+      if (searchQuery) {
+        allSteps = allSteps.filter(s => 
+          s.title.toLowerCase().includes(searchQuery) ||
+          s.notes.toLowerCase().includes(searchQuery) ||
+          s.jobTitle.toLowerCase().includes(searchQuery)
+        );
+      }
 
       if (!allSteps.length) {
         container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">[ No operations scheduled ]</div>`;
@@ -677,18 +827,58 @@
 
     function renderOthersContent() {
       const container = document.getElementById('others-items-container');
-      container.innerHTML = customOthersCategories.map(cat => `
-        <div class="job-card-item">
-          <div class="item-title" style="margin-bottom:6px;">${cat.emoji} ${cat.title}</div>
-          <div style="font-size:12px; color:var(--text-muted);">Custom rule container.</div>
-        </div>
-      `).join('');
+      container.innerHTML = customOthersCategories.map(cat => {
+        let matchingSteps = [];
+        jobCards.forEach(j => j.steps.forEach(s => {
+          if (s.category === cat.id) matchingSteps.push({ ...s, jobTitle: j.title });
+        }));
+
+        return `
+          <div class="job-card-item">
+            <div class="job-header">
+              <div class="item-title">${cat.emoji} ${cat.title}</div>
+              <button class="chip-btn" onclick="assignJobToCategory('${cat.id}')">+ Add Job/Step</button>
+            </div>
+            <div class="step-list" style="margin-top:10px;">
+              ${matchingSteps.length ? matchingSteps.map(s => createStepHTML(s)).join('') : '<div style="font-size:12px; color:var(--text-muted);">No operations assigned to this category.</div>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function assignJobToCategory(categoryId) {
+      const stepTitle = prompt("Enter Step/Job Title or ID to add to this category:");
+      if (!stepTitle) return;
+
+      let targetStep = null;
+      jobCards.forEach(j => j.steps.forEach(s => {
+        if (s.id === stepTitle || s.title.toLowerCase().includes(stepTitle.toLowerCase())) {
+          targetStep = s;
+          s.category = categoryId;
+        }
+      }));
+
+      if (targetStep) {
+        renderAll();
+        const initData = tg?.initData || '';
+        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+        try {
+          await fetch(`${WORKER_API_URL}/api/steps`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+            body: JSON.stringify({ stepId: targetStep.id, category: categoryId })
+          });
+        } catch (e) {}
+      } else {
+        alert("Operation step not found.");
+      }
     }
 
     function openAddCustomRuleModal() {
       const name = prompt("Enter Custom Category Name (e.g. 🔥 Heat Treatment Queue):");
       if (name) {
-        customOthersCategories.push({ emoji: '📌', title: name });
+        customOthersCategories.push({ id: `cat-${Date.now()}`, emoji: '📌', title: name });
         renderOthersContent();
       }
     }
@@ -719,6 +909,10 @@
     }
 
     function openAddJobCardModal() {
+      editingJobId = null;
+      document.getElementById('modal-job-title-header').innerText = 'New Job Card & Process Chart';
+      document.getElementById('input-job-title').value = '';
+
       const select = document.getElementById('select-job-folder');
       select.innerHTML = '';
       folders.forEach(f => select.innerHTML += `<option value="${f.id}" ${f.id === currentFolderId ? 'selected' : ''}>${f.name}</option>`);
@@ -730,6 +924,7 @@
 
     function addRichStepInput() {
       builderSteps.push({
+        id: '',
         title: '',
         assignee: 'UNASSIGNED',
         status: 'Not Started',
@@ -753,7 +948,7 @@
         <div class="builder-step-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong style="font-size:12px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
-            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red);" onclick="removeBuilderStep(${idx})">Remove</button>
+            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:none; padding:4px 8px; border-radius:4px;" onclick="removeBuilderStep(${idx})">Remove</button>
           </div>
 
           <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
@@ -772,10 +967,10 @@
             <div style="flex:1;">
               <label class="form-label">Initial Status</label>
               <select class="form-select" onchange="builderSteps[${idx}].status = this.value">
-                <option value="Not Started">Not Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="In Hold">In Hold</option>
-                <option value="Completed">Completed</option>
+                <option value="Not Started" ${s.status==='Not Started'?'selected':''}>Not Started</option>
+                <option value="In Progress" ${s.status==='In Progress'?'selected':''}>In Progress</option>
+                <option value="In Hold" ${s.status==='In Hold'?'selected':''}>In Hold</option>
+                <option value="Completed" ${s.status==='Completed'?'selected':''}>Completed</option>
               </select>
             </div>
           </div>
@@ -805,14 +1000,22 @@
       const initData = tg?.initData || '';
       const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
 
+      const payload = {
+        jobId: editingJobId,
+        title,
+        folderId,
+        steps: builderSteps
+      };
+
       try {
         const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-          body: JSON.stringify({ title, folderId, steps: builderSteps })
+          body: JSON.stringify(payload)
         });
         if (res.ok) {
           document.getElementById('input-job-title').value = '';
+          editingJobId = null;
           closeModal('modal-job-editor');
           await fetchLiveData();
         } else {
