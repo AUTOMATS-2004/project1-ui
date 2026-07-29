@@ -80,7 +80,7 @@
     .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
     .progress-container { margin-top: 10px; }
-    .progress-info { display: flex; justify-style: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
+    .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
     .progress-track { height: 6px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
@@ -178,6 +178,7 @@
 
   <main class="view-content">
 
+    <!-- View Page 1: TREE -->
     <div id="page-tree" class="tab-page active">
       <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
@@ -190,10 +191,12 @@
       <div id="tree-items-container"></div>
     </div>
 
+    <!-- View Page 2: SCHEDULE -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
+    <!-- View Page 3: OTHERS -->
     <div id="page-others" class="tab-page">
       <div id="others-category-controls"></div>
       <div id="others-items-container"></div>
@@ -733,7 +736,6 @@
       } catch (e) { alert("Delete network exception"); }
     }
 
-    /* Filter & Sort Engine Helper Functions */
     function getFilteredAndSortedJobs(inputJobs) {
       const sortOrder = document.getElementById('filter-sort-order')?.value || 'TITLE_ASC';
       const folderScope = document.getElementById('filter-folder-scope')?.value || 'ALL';
@@ -927,7 +929,7 @@
               'X-Telegram-Init-Data': initData,
               'X-Telegram-User-Id': String(userId)
             },
-            body: JSON.stringify({ stepId: targetStep.id, status: targetStep.status })
+            body: JSON.stringify({ stepId: targetStep.id, status: targetStep.status, title: targetStep.title })
           });
         } catch (e) { console.error("Patch status error:", e); }
       }
@@ -1107,7 +1109,7 @@
           await fetch(`${WORKER_API_URL}/api/steps`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-            body: JSON.stringify({ stepId: targetStep.id, category: activeTargetCategoryId })
+            body: JSON.stringify({ stepId: targetStep.id, category: activeTargetCategoryId, title: targetStep.title })
           });
         } catch (e) {}
       }
@@ -1192,7 +1194,7 @@
         <div class="builder-step-card">
           <div style="display:flex; justify-style:space-between; align-items:center;">
             <strong style="font-size:12px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
-            <button type="button" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
+            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
           </div>
 
           <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
@@ -1252,7 +1254,6 @@
       fPath.forEach(f => targetFolderPath.push(f.name));
       targetFolderPath.push(title);
 
-      // Process step file uploads if any files were selected
       for (let i = 0; i < builderSteps.length; i++) {
         const fileInput = document.getElementById(`builder-step-file-${i}`);
         if (fileInput && fileInput.files && fileInput.files.length > 0) {
