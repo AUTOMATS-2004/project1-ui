@@ -43,19 +43,17 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    /* 1. INCREASED TOP PADDING TO 85PX TO CLEAR TELEGRAM'S NATIVE CLOSE BUTTON */
-body {
-  background-color: var(--bg-dark);
-  color: var(--text-primary);
-  font-family: var(--font-main);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding-top: 85px !important;
-  padding-bottom: 80px;
-}
-    
-    /* Top Brand Header Bar */
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: max(55px, var(--tg-safe-area-inset-top, 55px)) !important;
+      padding-bottom: 80px;
+    }
+
     header {
       padding: 10px 16px;
       background: var(--bg-dark);
@@ -74,30 +72,27 @@ body {
     .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
     .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 3px 8px; border-radius: 12px; }
 
-    /* Universal Deep Search Bar */
     .search-bar-container {
-  padding: 8px 12px;
-  background: var(--bg-dark);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  position: relative;
-  z-index: 950;
-  transition: all 0.2s ease;
-}
+      padding: 8px 14px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 6px;
+      position: relative;
+      z-index: 950;
+    }
 
     .search-bar-container.compact-hidden { display: none; }
 
     .nav-primary {
-  display: flex;
-  align-items: center;
-  background: var(--bg-dark);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 2px 8px;
-  position: relative;
-  z-index: 900;
-}
+      display: flex;
+      align-items: center;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      position: relative;
+      z-index: 900;
+    }
 
     .primary-tab { flex: 1; padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; text-align: center; }
     .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
@@ -126,7 +121,7 @@ body {
     .item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
     .progress-container { margin-top: 8px; }
-    .progress-info { display: flex; justify-style: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
+    .progress-info { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
     .progress-track { height: 5px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
@@ -181,6 +176,31 @@ body {
     .builder-step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; }
 
     .context-menu-option { padding: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+    /* Visual Toast Banner */
+    .toast-notification {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #28292a;
+      border: 1px solid var(--accent-blue);
+      color: var(--text-primary);
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+
+    .toast-notification.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -249,11 +269,15 @@ body {
 
   <button class="fab" onclick="openAddJobCardModal()">+</button>
 
+  <!-- Toast Notification Banner -->
+  <div class="toast-notification" id="toast-banner">🔔 Notification</div>
+
   <!-- Context Menu Drawer -->
   <div class="modal-overlay" id="modal-context-menu">
     <div class="modal-drawer" style="padding:10px;">
       <div style="text-align:center; padding:6px; font-size:11px; color:var(--text-muted);" id="context-item-title">Item Options</div>
       <div class="context-menu-option" onclick="handleContextAction('edit')">✏️ Edit Full / View Details</div>
+      <div class="context-menu-option" onclick="handleContextAction('location')">📁 Open Item Folder Location</div>
       <div class="context-menu-option" onclick="handleContextAction('copy')">📋 Copy / Duplicate</div>
       <div class="context-menu-option" style="color:var(--accent-red);" onclick="handleContextAction('delete')">🗑️ Delete Permanently</div>
       <button class="btn-action" style="background:var(--bg-dark); color:var(--text-muted); margin-top:8px;" onclick="closeModal('modal-context-menu')">Cancel</button>
@@ -452,6 +476,50 @@ body {
       { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
     ];
 
+    /* ==========================================================================
+       SYNTHESIZED AUDIO CHIME & VISUAL TOAST NOTIFICATION ENGINE
+       ========================================================================== */
+    function playAudioChime(type = 'success') {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'delete') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.35);
+        }
+      } catch(e) {}
+    }
+
+    function showToast(message, type = 'success') {
+      playAudioChime(type);
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred(type === 'delete' ? 'warning' : 'success');
+      }
+
+      const toast = document.getElementById('toast-banner');
+      toast.innerText = message;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    /* Native Telegram Back Button & Android Back Gesture Engine */
     function updateNativeBackButton() {
       if (!tg || !tg.BackButton) return;
 
@@ -694,9 +762,32 @@ body {
         } else if (activeContextItem.type === 'step') {
           openFullEditStepModal(activeContextItem.id);
         }
+      } else if (action === 'location') {
+        openItemFolderLocation();
       } else if (action === 'copy') {
         duplicateJobCard(activeContextItem.id);
       }
+    }
+
+    function openItemFolderLocation() {
+      if (!activeContextItem) return;
+
+      let folderIdToNav = 'root';
+      if (activeContextItem.type === 'folder') {
+        const folder = folders.find(f => f.id === activeContextItem.id);
+        folderIdToNav = folder ? (folder.parentId || 'root') : 'root';
+      } else if (activeContextItem.type === 'job') {
+        const job = jobCards.find(j => j.id === activeContextItem.id);
+        folderIdToNav = job ? (job.folderId || 'root') : 'root';
+      } else if (activeContextItem.type === 'step') {
+        let parentJob = null;
+        jobCards.forEach(j => j.steps.forEach(s => { if (s.id === activeContextItem.id) parentJob = j; }));
+        folderIdToNav = parentJob ? (parentJob.folderId || 'root') : 'root';
+      }
+
+      navToFolder(folderIdToNav);
+      switchPrimaryTab('tree');
+      showToast("📁 Switched to Folder Location", "success");
     }
 
     function openFullEditFolderModal(folderId) {
@@ -800,6 +891,7 @@ body {
         if (res.ok) {
           closeModal('modal-step-editor');
           editingStepId = null;
+          showToast("✏️ Operation Step Updated", "success");
           await fetchLiveData();
         } else {
           const errText = await res.text();
@@ -827,7 +919,10 @@ body {
           headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
           body: JSON.stringify(duplicatePayload)
         });
-        if (res.ok) await fetchLiveData();
+        if (res.ok) {
+          showToast("📋 Job Card Duplicated", "success");
+          await fetchLiveData();
+        }
       } catch (e) { alert("Duplicate network error"); }
     }
 
@@ -847,6 +942,7 @@ body {
         });
 
         if (res.ok) {
+          showToast(`🗑️ ${type.toUpperCase()} Deleted`, "delete");
           await fetchLiveData();
         } else {
           const err = await res.text();
@@ -1034,6 +1130,7 @@ body {
       renderAll();
 
       if (targetStep) {
+        showToast(`Status ➔ ${targetStep.status}`, "success");
         const initData = tg?.initData || '';
         const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
         try {
@@ -1075,6 +1172,7 @@ body {
         const card = document.createElement('div');
         card.className = 'job-card-item';
         card.innerHTML = `<div style="font-size:10px; color:var(--accent-purple); margin-bottom:3px;">${s.jobTitle}</div>${createStepHTML(s)}`;
+        attachLongPressListener(card, 'step', s.id, s.title);
         container.appendChild(card);
       });
     }
@@ -1114,6 +1212,7 @@ body {
             </div>
             ${createStepHTML(s)}
           `;
+          attachLongPressListener(card, 'step', s.id, s.title);
           container.appendChild(card);
         });
 
@@ -1164,6 +1263,7 @@ body {
       renderOthersContent();
 
       if (targetStep) {
+        showToast("➖ Operation Removed from Category", "delete");
         const initData = tg?.initData || '';
         const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
         try {
@@ -1219,6 +1319,7 @@ body {
       renderOthersContent();
 
       if (targetStep) {
+        showToast("➕ Operation Added to Category", "success");
         const initData = tg?.initData || '';
         const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
         try {
@@ -1235,6 +1336,7 @@ body {
       const name = prompt("Enter Custom Category Name (e.g. 🔥 Heat Treatment Queue):");
       if (name) {
         customOthersCategories.push({ id: `cat-${Date.now()}`, emoji: '📌', title: name });
+        showToast("📌 Category Added", "success");
         renderOthersContent();
       }
     }
@@ -1263,6 +1365,7 @@ body {
           document.getElementById('input-folder-name').value = '';
           editingFolderId = null;
           closeModal('modal-folder');
+          showToast("📁 Folder Saved", "success");
           await fetchLiveData();
         } else {
           const errText = await res.text();
@@ -1402,6 +1505,7 @@ body {
           document.getElementById('input-job-title').value = '';
           editingJobId = null;
           closeModal('modal-job-editor');
+          showToast("⚙️ Job Card Saved", "success");
           await fetchLiveData();
         } else {
           const errText = await res.text();
