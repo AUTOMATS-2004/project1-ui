@@ -43,7 +43,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    /* SAFE AREA TOP PADDING TO PREVENT OVERLAP WITH TELEGRAM NATIVE CLOSE BUTTON */
+    /* 55PX TOP OFFSET TO POSITION THE APP CLEANLY BELOW TELEGRAM'S NATIVE TOP BAR */
     body {
       background-color: var(--bg-dark);
       color: var(--text-primary);
@@ -51,22 +51,38 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-top: max(46px, var(--tg-safe-area-inset-top, 46px)) !important;
+      padding-top: max(55px, var(--tg-safe-area-inset-top, 55px)) !important;
       padding-bottom: 80px;
     }
 
-    /* Streamlined Universal Search & User Header */
-    .search-bar-container {
-      padding: 8px 12px;
+    /* Top Brand Header Bar */
+    header {
+      padding: 10px 16px;
       background: var(--bg-dark);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      position: relative;
+      z-index: 1000;
+    }
+
+    header.compact-hidden { display: none; }
+
+    .header-brand { display: flex; align-items: center; gap: 8px; }
+    .gemini-spark { width: 12px; height: 12px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 3px; box-shadow: 0 0 10px rgba(124, 77, 255, 0.5); }
+    .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
+    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 3px 8px; border-radius: 12px; }
+
+    /* Universal Deep Search Bar */
+    .search-bar-container {
+      padding: 8px 14px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
       gap: 6px;
-      position: sticky;
-      top: max(46px, var(--tg-safe-area-inset-top, 46px));
+      position: relative;
       z-index: 950;
-      transition: all 0.2s ease;
     }
 
     .search-bar-container.compact-hidden { display: none; }
@@ -77,8 +93,7 @@
       background: var(--bg-dark);
       border-bottom: 1px solid var(--border-subtle);
       padding: 2px 8px;
-      position: sticky;
-      top: 0;
+      position: relative;
       z-index: 900;
     }
 
@@ -93,8 +108,6 @@
     .chip-btn { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
     .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); font-weight: 600; }
     .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 6px; }
-
-    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 6px 10px; border-radius: 14px; white-space: nowrap; }
 
     .toggle-subnav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; padding: 0 8px; cursor: pointer; }
 
@@ -111,7 +124,7 @@
     .item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
     .progress-container { margin-top: 8px; }
-    .progress-info { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
+    .progress-info { display: flex; justify-style: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
     .progress-track { height: 5px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
@@ -170,11 +183,19 @@
 </head>
 <body>
 
-  <!-- Universal Deep Search & User Bar (Sitting safely below Telegram Close Button) -->
+  <!-- Top Slim Brand Header -->
+  <header id="top-header">
+    <div class="header-brand">
+      <div class="gemini-spark"></div>
+      <div class="header-title">TRACE v3.0</div>
+    </div>
+    <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
+  </header>
+
+  <!-- Universal Deep Search Bar -->
   <div class="search-bar-container" id="top-search-bar">
     <input type="text" id="global-search-input" class="form-input" style="flex:1;" placeholder="🔍 Deep Search Specs, Jobs, Steps, Notes..." oninput="handleUniversalSearch()" />
-    <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
-    <button class="chip-btn" onclick="openFilterSortModal()">⚙️</button>
+    <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
   </div>
 
   <!-- Primary Tab Bar -->
@@ -548,15 +569,18 @@
 
     function toggleHeaderCompactMode() {
       subNavExpanded = !subNavExpanded;
+      const topHeader = document.getElementById('top-header');
       const topSearch = document.getElementById('top-search-bar');
       const subNav = document.getElementById('sub-nav-container');
       const icon = document.getElementById('subnav-toggle-icon');
 
       if (subNavExpanded) {
+        topHeader.classList.remove('compact-hidden');
         topSearch.classList.remove('compact-hidden');
         subNav.classList.remove('collapsed');
         icon.innerText = '▲';
       } else {
+        topHeader.classList.add('compact-hidden');
         topSearch.classList.add('compact-hidden');
         subNav.classList.add('collapsed');
         icon.innerText = '▼';
