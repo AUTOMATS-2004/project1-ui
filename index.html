@@ -5,18 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Gemini Task Matrix</title>
 
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Typography: Inter & Google Sans/Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* ==========================================================================
-       GEMINI-INSPIRED MODERN DARK THEME STYLES
-       ========================================================================== */
     :root {
       --bg-dark: #131314;
       --card-bg: #1e1f20;
@@ -24,7 +18,6 @@
       --border-subtle: #2d2e31;
       --border-accent: #3e4043;
 
-      /* Gemini Accent Palette */
       --accent-blue: #a8c7fa;
       --accent-blue-bg: rgba(168, 199, 250, 0.12);
       --accent-purple: #d0bcff;
@@ -48,430 +41,93 @@
       --radius-sm: 8px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-dark); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: var(--font-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-      padding-bottom: 80px;
-    }
+    header { padding: 14px 18px; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .gemini-spark { width: 14px; height: 14px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 4px; box-shadow: 0 0 12px rgba(124, 77, 255, 0.5); }
+    .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .user-pill { font-size: 11px; font-weight: 500; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 4px 10px; border-radius: 20px; }
 
-    /* Top Application Header */
-    header {
-      padding: 14px 18px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
+    .nav-primary { display: flex; align-items: center; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); padding: 4px 12px; position: sticky; top: 51px; z-index: 900; }
+    .primary-tab { flex: 1; padding: 12px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; text-transform: uppercase; text-align: center; }
+    .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .gemini-spark {
-      width: 14px;
-      height: 14px;
-      background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff);
-      border-radius: 4px;
-      box-shadow: 0 0 12px rgba(124, 77, 255, 0.5);
-    }
-
-    .header-title {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      color: var(--text-primary);
-    }
-
-    .user-pill {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--accent-blue);
-      background: var(--accent-blue-bg);
-      border: 1px solid rgba(168, 199, 250, 0.25);
-      padding: 4px 10px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Primary Navigation Bar (Row 1) */
-    .nav-primary {
-      display: flex;
-      align-items: center;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 4px 12px;
-      position: sticky;
-      top: 51px;
-      z-index: 900;
-    }
-
-    .primary-tab {
-      flex: 1;
-      padding: 12px 0;
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-muted);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      text-transform: uppercase;
-      text-align: center;
-      transition: all 0.2s ease;
-    }
-
-    .primary-tab.active {
-      color: var(--accent-blue);
-      border-bottom-color: var(--accent-blue);
-    }
-
-    /* Sub-Navigation Controls Container */
-    .sub-nav-container {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: all 0.25s ease-in-out;
-      overflow: hidden;
-    }
-
-    .sub-nav-container.collapsed {
-      display: none;
-    }
-
-    .sub-row {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
+    .sub-nav-container { background: var(--card-bg); border-bottom: 1px solid var(--border-subtle); padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .sub-nav-container.collapsed { display: none; }
+    .sub-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     .sub-row::-webkit-scrollbar { display: none; }
 
-    .chip-btn {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 20px;
-      background: var(--bg-dark);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-secondary);
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
+    .chip-btn { font-size: 11px; font-weight: 500; padding: 6px 14px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
+    .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); font-weight: 600; }
+    .btn-delete { background: rgba(242, 139, 130, 0.12); color: var(--accent-red); border: 1px solid var(--accent-red); font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+    .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px; }
 
-    .chip-btn.active {
-      background: var(--accent-blue-bg);
-      color: var(--accent-blue);
-      border-color: var(--accent-blue);
-      font-weight: 600;
-    }
+    .toggle-subnav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; padding: 0 8px; cursor: pointer; }
 
-    .toggle-subnav-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 12px;
-      padding: 0 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
+    .view-content { padding: 16px; max-width: 800px; margin: 0 auto; width: 100%; }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
 
-    /* View Containers */
-    .view-content {
-      padding: 16px;
-      max-width: 800px;
-      margin: 0 auto;
-      width: 100%;
-    }
+    .tree-breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; overflow-x: auto; }
+    .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
 
-    .tab-page {
-      display: none;
-    }
+    .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; }
+    .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
+    .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 10px; }
+    .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
-    .tab-page.active {
-      display: block;
-    }
+    .progress-container { margin-top: 10px; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
+    .progress-track { height: 6px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
-    /* ==========================================================================
-       1. KEEPASSDX-STYLE TREE MANAGER
-       ========================================================================== */
-    .tree-breadcrumbs {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
+    .step-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; }
+    .step-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .step-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 
-    .breadcrumb-item {
-      color: var(--accent-teal);
-      cursor: pointer;
-    }
-
-    .folder-item, .job-card-item {
-      background: var(--card-bg);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 14px;
-      margin-bottom: 10px;
-      transition: all 0.15s ease;
-    }
-
-    .folder-item:active, .job-card-item:active {
-      background: var(--card-hover);
-      border-color: var(--border-accent);
-    }
-
-    .folder-header, .job-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .folder-title-group, .job-title-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .folder-icon { color: var(--accent-amber); font-size: 16px; }
-    .job-icon { color: var(--accent-purple); font-size: 16px; }
-
-    .item-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    /* Progress Indicator Bar */
-    .progress-container {
-      margin-top: 10px;
-    }
-
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      font-family: var(--font-mono);
-    }
-
-    .progress-track {
-      height: 6px;
-      width: 100%;
-      background: var(--bg-dark);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
-      border-radius: 3px;
-      transition: width 0.3s ease;
-    }
-
-    /* Process Chart Step Items */
-    .step-list {
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .step-card {
-      background: var(--bg-dark);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-    }
-
-    .step-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 6px;
-    }
-
-    .step-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .badge-status {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 12px;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .status-started { background: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
-    .status-progress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
-    .status-hold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+    .badge-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
+    .status-workstarted { background: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+    .status-inprogress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+    .status-inhold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
     .status-completed { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-    .step-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 6px;
-      align-items: center;
-    }
+    .step-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .meta-pill { background: var(--card-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); }
+    .meta-assignee { color: var(--accent-teal); font-family: var(--font-mono); }
 
-    .meta-pill {
-      background: var(--card-bg);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--border-subtle);
-    }
+    .fab { position: fixed; bottom: 24px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #000; border: none; box-shadow: 0 4px 20px rgba(168, 199, 250, 0.3); font-size: 26px; font-weight: bold; cursor: pointer; z-index: 500; }
 
-    .meta-assignee {
-      color: var(--accent-teal);
-      font-family: var(--font-mono);
-    }
-
-    /* Floating Action Button (FAB) */
-    .fab {
-      position: fixed;
-      bottom: 24px;
-      right: 20px;
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-      color: #000;
-      border: none;
-      box-shadow: 0 4px 20px rgba(168, 199, 250, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 500;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .fab:active { transform: scale(0.9); }
-
-    /* Modal Overlay & Drawer */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(6px);
-      z-index: 2000;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-drawer {
-      background: var(--card-bg);
-      border-top: 1px solid var(--border-accent);
-      border-radius: 20px 20px 0 0;
-      width: 100%;
-      max-width: 650px;
-      max-height: 88vh;
-      overflow-y: auto;
-      padding: 20px;
-      transform: translateY(100%);
-      transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
-    }
-
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-drawer { background: var(--card-bg); border-top: 1px solid var(--border-accent); border-radius: 20px 20px 0 0; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 20px; transform: translateY(100%); transition: transform 0.25s ease; }
     .modal-overlay.active .modal-drawer { transform: translateY(0); }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 12px;
-    }
-
-    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; }
+    .modal-title { font-size: 15px; font-weight: 600; }
     .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
 
-    /* Form Controls */
     .form-group { margin-bottom: 14px; }
     .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
-    
-    .form-input, .form-textarea, .form-select {
-      width: 100%;
+    .form-input, .form-textarea, .form-select { width: 100%; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; outline: none; }
+    .btn-action { width: 100%; background: linear-gradient(135deg, var(--accent-blue), #7c4dff); color: #000; border: none; font-weight: 600; font-size: 13px; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 10px; }
+
+    /* Expanded Step Builder Card inside Modal */
+    .builder-step-card {
       background: var(--bg-dark);
       border: 1px solid var(--border-subtle);
-      color: var(--text-primary);
-      padding: 10px 12px;
       border-radius: var(--radius-sm);
-      font-size: 13px;
-      outline: none;
-    }
-
-    .form-input:focus, .form-textarea:focus, .form-select:focus {
-      border-color: var(--accent-blue);
-    }
-
-    .btn-action {
-      width: 100%;
-      background: linear-gradient(135deg, var(--accent-blue), #7c4dff);
-      color: #000;
-      border: none;
-      font-weight: 600;
-      font-size: 13px;
       padding: 12px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header Bar -->
   <header>
     <div class="header-brand">
       <div class="gemini-spark"></div>
@@ -480,7 +136,6 @@
     <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
   </header>
 
-  <!-- Primary Category Navigation (Row 1) -->
   <nav class="nav-primary">
     <button class="primary-tab active" onclick="switchPrimaryTab('tree')">TREE</button>
     <button class="primary-tab" onclick="switchPrimaryTab('schedule')">SCHEDULE</button>
@@ -488,16 +143,12 @@
     <button class="toggle-subnav-btn" onclick="toggleSubNav()" id="subnav-toggle-icon">▲</button>
   </nav>
 
-  <!-- Sub-Navigation Controls Container (Row 2 & 3 - Collapsible) -->
   <div class="sub-nav-container" id="sub-nav-container">
-    <!-- Row 2: Sub Views -->
-    <div class="sub-row" id="sub-row-tabs">
+    <div class="sub-row" id="sub-row-tabs" style="display:none;">
       <button class="chip-btn active" onclick="setSubTab('today')">TODAY</button>
       <button class="chip-btn" onclick="setSubTab('deadline')">DEADLINE</button>
       <button class="chip-btn" onclick="setSubTab('queue')">QUEUE</button>
     </div>
-
-    <!-- Row 3: Assignee Filters -->
     <div class="sub-row" id="sub-row-filters">
       <button class="chip-btn active" onclick="setAssigneeFilter('ALL')">ALL</button>
       <button class="chip-btn" onclick="setAssigneeFilter('JEEVAN')">JEEVAN</button>
@@ -507,74 +158,84 @@
     </div>
   </div>
 
-  <!-- Main View Container -->
   <main class="view-content">
-
-    <!-- 1. TREE VIEW (KeePassDX Folder Structure) -->
     <div id="page-tree" class="tab-page active">
+      <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
-        <span class="breadcrumb-item" onclick="navToFolderRoot()">📁 Root</span>
+        <span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>
       </div>
-
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <button class="chip-btn" onclick="openAddFolderModal()">+ New Folder</button>
         <button class="chip-btn" onclick="openAddJobCardModal()">+ New Job Card</button>
       </div>
-
       <div id="tree-items-container"></div>
     </div>
 
-    <!-- 2. SCHEDULE VIEW -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
-    <!-- 3. OTHERS VIEW -->
     <div id="page-others" class="tab-page">
       <div id="others-items-container"></div>
     </div>
-
   </main>
 
-  <!-- Floating Add Button -->
-  <button class="fab" onclick="handleFabClick()">+</button>
+  <button class="fab" onclick="openAddJobCardModal()">+</button>
 
-  <!-- Modal: Create / Edit Job Card & Process Chart Step -->
+  <!-- Modal: Folder Creator -->
+  <div class="modal-overlay" id="modal-folder">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <div class="modal-title">New Folder</div>
+        <button class="close-btn" onclick="closeModal('modal-folder')">&times;</button>
+      </div>
+      <form onsubmit="saveFolder(event)">
+        <div class="form-group">
+          <label class="form-label">Folder Name</label>
+          <input type="text" id="input-folder-name" class="form-input" placeholder="e.g. Worm Gears" required />
+        </div>
+        <button type="submit" class="btn-action">Create Folder</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Rich Job Card & Process Chart Step Builder -->
   <div class="modal-overlay" id="modal-job-editor">
     <div class="modal-drawer">
       <div class="modal-header">
-        <div class="modal-title" id="modal-editor-title">Job Card & Process Chart</div>
+        <div class="modal-title">New Job Card & Process Chart</div>
         <button class="close-btn" onclick="closeModal('modal-job-editor')">&times;</button>
       </div>
-
-      <form id="job-editor-form" onsubmit="saveJobCard(event)">
+      <form onsubmit="saveJobCard(event)">
         <div class="form-group">
           <label class="form-label">Job Title</label>
-          <input type="text" id="input-job-title" class="form-input" placeholder="e.g. Worm Gear Shaft Batch #409" required />
+          <input type="text" id="input-job-title" class="form-input" placeholder="e.g. Worm Shaft #409" required />
         </div>
-
         <div class="form-group">
           <label class="form-label">Destination Folder</label>
           <select id="select-job-folder" class="form-select"></select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Process Chart Steps</label>
-          <div id="process-steps-builder"></div>
-          <button type="button" class="chip-btn" style="margin-top:8px;" onclick="addStepToBuilder()">+ Add Operation Step</button>
+          <label class="form-label">Process Chart Operations Sequence</label>
+          <div id="steps-builder-list"></div>
+          <button type="button" class="chip-btn" style="margin-top:8px;" onclick="addRichStepInput()">+ Add Operation Step</button>
         </div>
 
-        <button type="submit" class="btn-action">Save Job Card</button>
+        <button type="submit" class="btn-action">Save to Google Sheets</button>
       </form>
     </div>
   </div>
 
   <script>
-    /* ==========================================================================
-       STATE MANAGEMENT & SEED DATA
-       ========================================================================== */
+    const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); }
+
+    const userBadge = document.getElementById('user-pill');
+    if (tg?.initDataUnsafe?.user) {
+      userBadge.innerText = `👤 ${tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username}`;
+    }
 
     let currentPrimaryTab = 'tree';
     let currentSubTab = 'today';
@@ -582,64 +243,41 @@
     let subNavExpanded = true;
     let currentFolderId = 'root';
 
-    // Seed KeePassDX Style Folder Tree Data
-    let folders = [
-      { id: 'root', name: 'Root', parentId: null },
-      { id: 'f-gears', name: 'Gear Production', parentId: 'root' },
-      { id: 'f-shafts', name: 'Drive Shafts', parentId: 'root' },
-      { id: 'f-worm', name: 'Worm Gears', parentId: 'f-gears' }
-    ];
+    let folders = [{ id: 'root', name: 'Root', parentId: null }];
+    let jobCards = [];
+    let builderSteps = [];
 
-    // Seed Job Cards with Process Chart Steps
-    let jobCards = [
-      {
-        id: 'JOB-101',
-        folderId: 'f-worm',
-        title: 'High Precision Worm Gear #409',
-        steps: [
-          {
-            id: 'STP-1',
-            title: 'Raw Material Cutting & Prep',
-            assignee: 'RAVI KUMAR',
-            status: 'Completed',
-            date: '2026-07-24',
-            time: '09:00',
-            hasAttachment: true,
-            linkedJob: null,
-            notes: 'Check outer diameter 85mm.'
-          },
-          {
-            id: 'STP-2',
-            title: 'CNC Lathe Turning',
-            assignee: 'JEEVAN',
-            status: 'In Progress',
-            date: '2026-07-24',
-            time: '11:30',
-            hasAttachment: false,
-            linkedJob: null,
-            notes: 'Tolerance +/- 0.02mm.'
-          },
-          {
-            id: 'STP-3',
-            title: 'Worm Thread Hobbing',
-            assignee: 'SANANTH',
-            status: 'Work Started',
-            date: '2026-07-25',
-            time: '14:00',
-            hasAttachment: true,
-            linkedJob: 'JOB-101',
-            notes: 'Use Cutter #4.'
-          }
-        ]
-      }
-    ];
-
-    /* ==========================================================================
-       INITIALIZATION & NAVIGATION
-       ========================================================================== */
     document.addEventListener('DOMContentLoaded', () => {
-      renderAll();
+      fetchLiveData();
     });
+
+    async function fetchLiveData() {
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/data`, {
+          headers: {
+            'X-Telegram-Init-Data': initData,
+            'X-Telegram-User-Id': String(userId)
+          }
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          alert(`Server Fetch Error (${res.status}):\n${errText}`);
+          return;
+        }
+        const data = await res.json();
+
+        if (data.folders) folders = data.folders.length ? data.folders : [{ id: 'root', name: 'Root', parentId: null }];
+        if (data.jobCards) jobCards = data.jobCards;
+
+        renderAll();
+      } catch (err) {
+        alert(`Network/Fetch Exception:\n${err.message}`);
+        renderAll();
+      }
+    }
 
     function renderAll() {
       renderTreeFolderContent();
@@ -655,7 +293,6 @@
 
       event.target.classList.add('active');
       document.getElementById(`page-${tab}`).classList.add('active');
-
       updateSubNavVisibility();
     }
 
@@ -663,23 +300,12 @@
       subNavExpanded = !subNavExpanded;
       const container = document.getElementById('sub-nav-container');
       const icon = document.getElementById('subnav-toggle-icon');
-
-      if (subNavExpanded) {
-        container.classList.remove('collapsed');
-        icon.innerText = '▲';
-      } else {
-        container.classList.add('collapsed');
-        icon.innerText = '▼';
-      }
+      container.classList.toggle('collapsed', !subNavExpanded);
+      icon.innerText = subNavExpanded ? '▲' : '▼';
     }
 
     function updateSubNavVisibility() {
-      const rowTabs = document.getElementById('sub-row-tabs');
-      if (currentPrimaryTab === 'schedule') {
-        rowTabs.style.display = 'flex';
-      } else {
-        rowTabs.style.display = 'none';
-      }
+      document.getElementById('sub-row-tabs').style.display = currentPrimaryTab === 'schedule' ? 'flex' : 'none';
     }
 
     function setSubTab(sub) {
@@ -696,22 +322,26 @@
       renderAll();
     }
 
-    /* ==========================================================================
-       1. KEEPASSDX FOLDER MANAGER RENDERER
-       ========================================================================== */
     function renderTreeFolderContent() {
       const container = document.getElementById('tree-items-container');
+      const navControls = document.getElementById('tree-nav-controls');
       container.innerHTML = '';
+      navControls.innerHTML = '';
+
+      // Back Button if inside a subfolder
+      const currentFolder = folders.find(f => f.id === currentFolderId);
+      if (currentFolder && currentFolder.parentId) {
+        const parentFolder = folders.find(f => f.id === currentFolder.parentId) || { name: 'Root', id: 'root' };
+        navControls.innerHTML = `<button class="btn-back" onclick="navToFolder('${parentFolder.id}')">⬅️ Back to ${parentFolder.name}</button>`;
+      }
 
       // Breadcrumbs
-      const breadcrumbsContainer = document.getElementById('tree-breadcrumbs');
-      breadcrumbsContainer.innerHTML = `<span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>`;
+      const breadcrumbs = document.getElementById('tree-breadcrumbs');
+      breadcrumbs.innerHTML = `<span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>`;
       
       let path = getFolderPath(currentFolderId);
       path.forEach(f => {
-        if (f.id !== 'root') {
-          breadcrumbsContainer.innerHTML += ` ➔ <span class="breadcrumb-item" onclick="navToFolder('${f.id}')">${f.name}</span>`;
-        }
+        if (f.id !== 'root') breadcrumbs.innerHTML += ` ➔ <span class="breadcrumb-item" onclick="navToFolder('${f.id}')">${f.name}</span>`;
       });
 
       // Child Folders
@@ -719,42 +349,31 @@
       subFolders.forEach(folder => {
         const item = document.createElement('div');
         item.className = 'folder-item';
-        item.onclick = () => navToFolder(folder.id);
         item.innerHTML = `
           <div class="folder-header">
-            <div class="folder-title-group">
-              <span class="folder-icon">📁</span>
+            <div class="folder-title-group" onclick="navToFolder('${folder.id}')" style="cursor:pointer; flex:1;">
+              <span>📁</span>
               <span class="item-title">${folder.name}</span>
             </div>
-            <span style="font-size:12px; color:var(--text-muted);">➔</span>
-          </div>
-        `;
+            <button class="btn-delete" onclick="deleteItem('folder', '${folder.id}')">🗑️ Delete</button>
+          </div>`;
         container.appendChild(item);
       });
 
       // Job Cards inside current folder
-      const currentJobCards = jobCards.filter(j => j.folderId === currentFolderId);
-      currentJobCards.forEach(job => {
-        container.appendChild(createJobCardElement(job));
-      });
+      const currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
+      currentJobs.forEach(job => container.appendChild(createJobCardElement(job)));
 
-      if (subFolders.length === 0 && currentJobCards.length === 0) {
+      if (!subFolders.length && !currentJobs.length) {
         container.innerHTML += `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">[ Folder Empty ]</div>`;
       }
     }
 
-    function navToFolder(folderId) {
-      currentFolderId = folderId;
-      renderTreeFolderContent();
-    }
+    function navToFolder(id) { currentFolderId = id; renderTreeFolderContent(); }
 
     function getFolderPath(folderId) {
-      let path = [];
-      let current = folders.find(f => f.id === folderId);
-      while (current) {
-        path.unshift(current);
-        current = folders.find(f => f.id === current.parentId);
-      }
+      let path = [], current = folders.find(f => f.id === folderId);
+      while (current) { path.unshift(current); current = folders.find(f => f.id === current.parentId); }
       return path;
     }
 
@@ -762,143 +381,266 @@
       const card = document.createElement('div');
       card.className = 'job-card-item';
 
-      const completedCount = job.steps.filter(s => s.status === 'Completed').length;
-      const totalCount = job.steps.length;
-      const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+      const completed = job.steps.filter(s => s.status === 'Completed').length;
+      const total = job.steps.length;
+      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
       card.innerHTML = `
         <div class="job-header">
           <div class="job-title-group">
-            <span class="job-icon">⚙️</span>
+            <span>⚙️</span>
             <span class="item-title">${job.title}</span>
           </div>
-          <button class="chip-btn" onclick="openEditJobModal('${job.id}')">Edit</button>
+          <button class="btn-delete" onclick="deleteItem('job', '${job.id}')">🗑️ Delete</button>
         </div>
-
         <div class="progress-container">
-          <div class="progress-info">
-            <span>Process Completion</span>
-            <span>${progressPercent}% (${completedCount}/${totalCount})</span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: ${progressPercent}%;"></div>
-          </div>
+          <div class="progress-info"><span>Progress</span><span>${pct}% (${completed}/${total})</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width: ${pct}%;"></div></div>
         </div>
-
-        <div class="step-list">
-          ${job.steps.map(step => createStepHTML(step)).join('')}
-        </div>
+        <div class="step-list">${job.steps.map(s => createStepHTML(s)).join('')}</div>
       `;
-
       return card;
     }
 
     function createStepHTML(step) {
-      if (currentAssigneeFilter !== 'ALL' && step.assignee !== currentAssigneeFilter) {
-        return '';
-      }
-
+      if (currentAssigneeFilter !== 'ALL' && step.assignee !== currentAssigneeFilter) return '';
       const statusClass = `status-${step.status.toLowerCase().replace(/\s+/g, '')}`;
 
       return `
         <div class="step-card">
           <div class="step-header">
             <span class="step-title">${step.title}</span>
-            <span class="badge-status ${statusClass}" onclick="cycleStepStatus('${step.id}')">${step.status}</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span class="badge-status ${statusClass}" onclick="cycleStepStatus('${step.id}')">${step.status}</span>
+              <button class="btn-delete" style="padding:2px 6px; font-size:10px;" onclick="deleteItem('step', '${step.id}')">🗑️</button>
+            </div>
           </div>
           <div class="step-meta">
             <span class="meta-pill meta-assignee">👤 ${step.assignee || 'UNASSIGNED'}</span>
-            ${step.date ? `<span class="meta-pill">📅 ${step.date} ${step.time}</span>` : ''}
-            ${step.hasAttachment ? `<span class="meta-pill">📎 File attached</span>` : ''}
-            ${step.linkedJob ? `<span class="meta-pill">🔗 Linked</span>` : ''}
+            ${step.date ? `<span class="meta-pill">📅 ${step.date} ${step.time || ''}</span>` : ''}
+            ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" class="meta-pill" style="color:var(--accent-blue); text-decoration:none;">📎 PDF/Image Document</a>` : ''}
+            ${step.linkedJob ? `<span class="meta-pill">🔗 Linked Job: ${step.linkedJob}</span>` : ''}
+            ${step.notes ? `<div style="width:100%; font-size:11px; color:var(--text-muted); margin-top:4px;">📝 ${step.notes}</div>` : ''}
           </div>
         </div>
       `;
     }
 
-    function cycleStepStatus(stepId) {
-      jobCards.forEach(job => {
-        job.steps.forEach(step => {
-          if (step.id === stepId) {
-            const cycle = ['Work Started', 'In Progress', 'In Hold', 'Completed'];
-            const currentIndex = cycle.indexOf(step.status);
-            step.status = cycle[(currentIndex + 1) % cycle.length];
-          }
-        });
-      });
+    async function cycleStepStatus(stepId) {
+      const cycle = ['Work Started', 'In Progress', 'In Hold', 'Completed'];
+      let targetStep = null;
+
+      jobCards.forEach(j => j.steps.forEach(s => {
+        if (s.id === stepId) {
+          s.status = cycle[(cycle.indexOf(s.status) + 1) % cycle.length];
+          targetStep = s;
+        }
+      }));
+
       renderAll();
+
+      if (targetStep) {
+        const initData = tg?.initData || '';
+        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+        try {
+          await fetch(`${WORKER_API_URL}/api/steps`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Telegram-Init-Data': initData,
+              'X-Telegram-User-Id': String(userId)
+            },
+            body: JSON.stringify({ stepId: targetStep.id, status: targetStep.status })
+          });
+        } catch (e) { console.error("Patch status error:", e); }
+      }
     }
 
-    /* ==========================================================================
-       2. SCHEDULE VIEW RENDERER
-       ========================================================================== */
+    async function deleteItem(type, id) {
+      if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
+
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-Init-Data': initData,
+            'X-Telegram-User-Id': String(userId)
+          },
+          body: JSON.stringify({ type, id })
+        });
+
+        if (res.ok) {
+          await fetchLiveData();
+        } else {
+          const err = await res.text();
+          alert(`Delete Failed (${res.status}): ${err}`);
+        }
+      } catch (e) { alert("Delete network error"); }
+    }
+
     function renderScheduleContent() {
       const container = document.getElementById('schedule-items-container');
       container.innerHTML = '';
-
       let allSteps = [];
-      jobCards.forEach(job => {
-        job.steps.forEach(s => allSteps.push({ ...s, jobTitle: job.title }));
-      });
+      jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title })));
 
-      // Filter by Assignee
-      if (currentAssigneeFilter !== 'ALL') {
-        allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
-      }
+      if (currentAssigneeFilter !== 'ALL') allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
 
-      if (allSteps.length === 0) {
+      if (!allSteps.length) {
         container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">[ No operations scheduled ]</div>`;
         return;
       }
 
-      allSteps.forEach(step => {
+      allSteps.forEach(s => {
         const card = document.createElement('div');
         card.className = 'job-card-item';
-        card.innerHTML = `
-          <div style="font-size:11px; color:var(--accent-purple); margin-bottom:4px; font-family:var(--font-mono);">${step.jobTitle}</div>
-          ${createStepHTML(step)}
-        `;
+        card.innerHTML = `<div style="font-size:11px; color:var(--accent-purple); margin-bottom:4px;">${s.jobTitle}</div>${createStepHTML(s)}`;
         container.appendChild(card);
       });
     }
 
-    /* ==========================================================================
-       3. OTHERS VIEW RENDERER
-       ========================================================================== */
     function renderOthersContent() {
-      const container = document.getElementById('others-items-container');
-      container.innerHTML = `
+      document.getElementById('others-items-container').innerHTML = `
         <div class="job-card-item">
           <div class="item-title" style="color:var(--accent-red); margin-bottom:6px;">🚨 Overdue Operations</div>
           <div style="font-size:12px; color:var(--text-muted);">0 items past deadline.</div>
-        </div>
-        <div class="job-card-item">
-          <div class="item-title" style="color:var(--accent-amber); margin-bottom:6px;">⭐ Urgent Priority</div>
-          <div style="font-size:12px; color:var(--text-muted);">Dynamic category filters.</div>
-        </div>
-      `;
+        </div>`;
     }
 
-    /* ==========================================================================
-       MODAL CONTROLS & BUILDER
-       ========================================================================== */
-    function handleFabClick() {
-      openAddJobCardModal();
+    function openAddFolderModal() { document.getElementById('modal-folder').classList.add('active'); }
+
+    async function saveFolder(e) {
+      e.preventDefault();
+      const name = document.getElementById('input-folder-name').value;
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/folders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+          body: JSON.stringify({ name, parentId: currentFolderId })
+        });
+        if (res.ok) {
+          document.getElementById('input-folder-name').value = '';
+          closeModal('modal-folder');
+          await fetchLiveData();
+        } else {
+          const errText = await res.text();
+          alert(`Folder Save Error (${res.status}):\n${errText}`);
+        }
+      } catch (err) { alert(`Network error: ${err.message}`); }
     }
 
     function openAddJobCardModal() {
-      const folderSelect = document.getElementById('select-job-folder');
-      folderSelect.innerHTML = '';
-      folders.forEach(f => {
-        folderSelect.innerHTML += `<option value="${f.id}" ${f.id === currentFolderId ? 'selected' : ''}>${f.name}</option>`;
-      });
+      const select = document.getElementById('select-job-folder');
+      select.innerHTML = '';
+      folders.forEach(f => select.innerHTML += `<option value="${f.id}" ${f.id === currentFolderId ? 'selected' : ''}>${f.name}</option>`);
 
+      builderSteps = [];
+      addRichStepInput();
       document.getElementById('modal-job-editor').classList.add('active');
     }
 
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
+    function addRichStepInput() {
+      builderSteps.push({
+        title: '',
+        assignee: 'UNASSIGNED',
+        status: 'Work Started',
+        date: '',
+        time: '',
+        attachmentUrl: '',
+        linkedJob: '',
+        notes: ''
+      });
+      renderStepsBuilder();
     }
+
+    function removeBuilderStep(idx) {
+      builderSteps.splice(idx, 1);
+      renderStepsBuilder();
+    }
+
+    function renderStepsBuilder() {
+      const list = document.getElementById('steps-builder-list');
+      list.innerHTML = builderSteps.map((s, idx) => `
+        <div class="builder-step-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
+            <button type="button" class="btn-delete" onclick="removeBuilderStep(${idx})">Remove Step</button>
+          </div>
+
+          <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
+
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <label class="form-label">Assignee</label>
+              <select class="form-select" onchange="builderSteps[${idx}].assignee = this.value">
+                <option value="UNASSIGNED" ${s.assignee==='UNASSIGNED'?'selected':''}>UNASSIGNED</option>
+                <option value="JEEVAN" ${s.assignee==='JEEVAN'?'selected':''}>JEEVAN</option>
+                <option value="RAVI KUMAR" ${s.assignee==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option>
+                <option value="SANANTH" ${s.assignee==='SANANTH'?'selected':''}>SANANTH</option>
+                <option value="ALL" ${s.assignee==='ALL'?'selected':''}>ALL</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label class="form-label">Initial Status</label>
+              <select class="form-select" onchange="builderSteps[${idx}].status = this.value">
+                <option value="Work Started">Work Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="In Hold">In Hold</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <label class="form-label">Date (Calendar/Deadline)</label>
+              <input type="date" class="form-input" value="${s.date}" onchange="builderSteps[${idx}].date = this.value" />
+            </div>
+            <div style="flex:1;">
+              <label class="form-label">Time</label>
+              <input type="time" class="form-input" value="${s.time}" onchange="builderSteps[${idx}].time = this.value" />
+            </div>
+          </div>
+
+          <input type="text" class="form-input" placeholder="Manufacturing Specs / Notes" value="${s.notes}" oninput="builderSteps[${idx}].notes = this.value" />
+          <input type="url" class="form-input" placeholder="Attachment Link (PDF / Google Drive Image)" value="${s.attachmentUrl}" oninput="builderSteps[${idx}].attachmentUrl = this.value" />
+          <input type="text" class="form-input" placeholder="Linked Job Card / Step Relation (Optional)" value="${s.linkedJob}" oninput="builderSteps[${idx}].linkedJob = this.value" />
+        </div>
+      `).join('');
+    }
+
+    async function saveJobCard(e) {
+      e.preventDefault();
+      const title = document.getElementById('input-job-title').value;
+      const folderId = document.getElementById('select-job-folder').value;
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+          body: JSON.stringify({ title, folderId, steps: builderSteps })
+        });
+        if (res.ok) {
+          document.getElementById('input-job-title').value = '';
+          closeModal('modal-job-editor');
+          await fetchLiveData();
+        } else {
+          const errText = await res.text();
+          alert(`Job Card Save Error (${res.status}):\n${errText}`);
+        }
+      } catch (err) { alert(`Network error: ${err.message}`); }
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   </script>
 </body>
 </html>
