@@ -442,9 +442,7 @@
       { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
     ];
 
-    /* ==========================================================================
-       TELEGRAM NATIVE BACK BUTTON & ANDROID BACK GESTURE ENGINE
-       ========================================================================== */
+    /* Native Telegram Back Button & Android Back Gesture Engine */
     function updateNativeBackButton() {
       if (!tg || !tg.BackButton) return;
 
@@ -1389,7 +1387,7 @@
         const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
-          body: JSON.stringify({ jobId: editingJobId, title, folderId, steps: builderSteps })
+          body: JSON.stringify(payload)
         });
         if (res.ok) {
           document.getElementById('input-job-title').value = '';
