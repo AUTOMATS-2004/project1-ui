@@ -75,12 +75,12 @@
     .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
 
     .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; position: relative; user-select: none; }
-    .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
+    .folder-header, .job-header { display: flex; justify-style: space-between; align-items: center; }
     .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 10px; }
     .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
     .progress-container { margin-top: 10px; }
-    .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
+    .progress-info { display: flex; justify-style: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
     .progress-track { height: 6px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
@@ -112,12 +112,13 @@
     .form-group { margin-bottom: 14px; }
     .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
     
-    /* Strict High-Contrast Color Overrides for Select & Input Text */
+    /* MANDATORY WHITE BACKGROUND WITH BLACK TEXT FOR ALL SELECTS & INPUTS */
     select.form-select, input.form-input, textarea.form-textarea {
       width: 100%;
-      background-color: #28292a !important;
-      color: #ffffff !important;
-      border: 1px solid var(--border-subtle) !important;
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+      border: 1px solid var(--border-accent) !important;
       padding: 10px 12px;
       border-radius: var(--radius-sm);
       font-size: 13px;
@@ -125,8 +126,9 @@
     }
 
     select.form-select option {
-      background-color: #1e1f20 !important;
-      color: #ffffff !important;
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
     }
 
     .btn-action { width: 100%; background: linear-gradient(135deg, var(--accent-blue), #7c4dff); color: #000; border: none; font-weight: 600; font-size: 13px; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 10px; }
@@ -178,6 +180,7 @@
 
   <main class="view-content">
 
+    <!-- View Page 1: TREE -->
     <div id="page-tree" class="tab-page active">
       <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
@@ -190,16 +193,17 @@
       <div id="tree-items-container"></div>
     </div>
 
+    <!-- View Page 2: SCHEDULE -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
+    <!-- View Page 3: OTHERS (Folder Drill-Down View) -->
     <div id="page-others" class="tab-page">
-      <div style="margin-bottom:14px;">
-        <button class="chip-btn" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>
-      </div>
+      <div id="others-category-controls"></div>
       <div id="others-items-container"></div>
     </div>
+
   </main>
 
   <button class="fab" onclick="openAddJobCardModal()">+</button>
@@ -215,14 +219,14 @@
     </div>
   </div>
 
-  <!-- Native Searchable Category Picker Drawer for OTHERS -->
+  <!-- Searchable Picker Modal for OTHERS Categories -->
   <div class="modal-overlay" id="modal-category-picker">
     <div class="modal-drawer">
       <div class="modal-header">
-        <div class="modal-title" id="category-picker-title">Add Job/Step to Category</div>
+        <div class="modal-title" id="category-picker-title">Add Operation to Category</div>
         <button class="close-btn" onclick="closeModal('modal-category-picker')">&times;</button>
       </div>
-      <input type="text" id="category-search-input" class="form-input" placeholder="Type to search Step or Job..." oninput="renderCategoryPickerList()" />
+      <input type="text" id="category-search-input" class="form-input" placeholder="Type to search Operation Step or Job..." oninput="renderCategoryPickerList()" />
       <div id="category-picker-results" style="max-height:300px; overflow-y:auto; margin-top:10px;"></div>
     </div>
   </div>
@@ -305,6 +309,67 @@
     </div>
   </div>
 
+  <!-- Modal: Individual Operation Step Edit Drawer -->
+  <div class="modal-overlay" id="modal-step-editor">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-step-title-header">Edit Operation Step</div>
+        <button class="close-btn" onclick="closeModal('modal-step-editor')">&times;</button>
+      </div>
+      <form onsubmit="saveIndividualStepEdit(event)">
+        <div class="form-group">
+          <label class="form-label">Step Title</label>
+          <input type="text" id="edit-step-title" class="form-input" required />
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;" class="form-group">
+            <label class="form-label">Assignee</label>
+            <select id="edit-step-assignee" class="form-select">
+              <option value="UNASSIGNED">UNASSIGNED</option>
+              <option value="JEEVAN">JEEVAN</option>
+              <option value="RAVI KUMAR">RAVI KUMAR</option>
+              <option value="SANANTH">SANANTH</option>
+              <option value="ALL">ALL</option>
+            </select>
+          </div>
+          <div style="flex:1;" class="form-group">
+            <label class="form-label">Status</label>
+            <select id="edit-step-status" class="form-select">
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="In Hold">In Hold</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;" class="form-group">
+            <label class="form-label">Deadline Date</label>
+            <input type="date" id="edit-step-date" class="form-input" />
+          </div>
+          <div style="flex:1;" class="form-group">
+            <label class="form-label">Time</label>
+            <input type="time" id="edit-step-time" class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Manufacturing Specs / Notes</label>
+          <textarea id="edit-step-notes" class="form-textarea" rows="2"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Attachment Link (PDF / Google Drive)</label>
+          <input type="url" id="edit-step-attachment" class="form-input" />
+        </div>
+
+        <button type="submit" class="btn-action">Update Operation Step</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
     const tg = window.Telegram?.WebApp;
@@ -325,7 +390,9 @@
     let activeContextItem = null;
     let editingJobId = null;
     let editingFolderId = null;
+    let editingStepId = null;
     let activeTargetCategoryId = null;
+    let selectedCategoryDrillDownId = null; // null if top-level categories view, string if drilled into category
 
     let folders = [{ id: 'root', name: 'Root', parentId: null }];
     let jobCards = [];
@@ -468,6 +535,8 @@
           openFullEditJobCardModal(activeContextItem.id);
         } else if (activeContextItem.type === 'folder') {
           openFullEditFolderModal(activeContextItem.id);
+        } else if (activeContextItem.type === 'step') {
+          openFullEditStepModal(activeContextItem.id);
         }
       } else if (action === 'copy') {
         duplicateJobCard(activeContextItem.id);
@@ -475,7 +544,7 @@
     }
 
     /* ==========================================================================
-       FULL EDIT & COPY ACTIONS
+       FULL EDIT MODALS FOR FOLDERS, JOBS, & INDIVIDUAL STEPS
        ========================================================================== */
     function openFullEditFolderModal(folderId) {
       const folder = folders.find(f => f.id === folderId);
@@ -502,6 +571,57 @@
       builderSteps = JSON.parse(JSON.stringify(job.steps));
       renderStepsBuilder();
       document.getElementById('modal-job-editor').classList.add('active');
+    }
+
+    function openFullEditStepModal(stepId) {
+      let targetStep = null;
+      jobCards.forEach(j => j.steps.forEach(s => { if (s.id === stepId) targetStep = s; }));
+      if (!targetStep) return;
+
+      editingStepId = stepId;
+      document.getElementById('modal-step-title-header').innerText = `Edit Step: ${targetStep.title}`;
+      document.getElementById('edit-step-title').value = targetStep.title;
+      document.getElementById('edit-step-assignee').value = targetStep.assignee || 'UNASSIGNED';
+      document.getElementById('edit-step-status').value = targetStep.status || 'Not Started';
+      document.getElementById('edit-step-date').value = targetStep.date || '';
+      document.getElementById('edit-step-time').value = targetStep.time || '';
+      document.getElementById('edit-step-notes').value = targetStep.notes || '';
+      document.getElementById('edit-step-attachment').value = targetStep.attachmentUrl || '';
+
+      document.getElementById('modal-step-editor').classList.add('active');
+    }
+
+    async function saveIndividualStepEdit(e) {
+      e.preventDefault();
+      if (!editingStepId) return;
+
+      const title = document.getElementById('edit-step-title').value;
+      const assignee = document.getElementById('edit-step-assignee').value;
+      const status = document.getElementById('edit-step-status').value;
+      const date = document.getElementById('edit-step-date').value;
+      const time = document.getElementById('edit-step-time').value;
+      const notes = document.getElementById('edit-step-notes').value;
+      const attachmentUrl = document.getElementById('edit-step-attachment').value;
+
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      try {
+        const res = await fetch(`${WORKER_API_URL}/api/steps`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+          body: JSON.stringify({ stepId: editingStepId, title, assignee, status, date, time, notes, attachmentUrl })
+        });
+
+        if (res.ok) {
+          closeModal('modal-step-editor');
+          editingStepId = null;
+          await fetchLiveData();
+        } else {
+          const errText = await res.text();
+          alert(`Step Edit Error (${res.status}):\n${errText}`);
+        }
+      } catch (err) { alert(`Network Error: ${err.message}`); }
     }
 
     async function duplicateJobCard(jobId) {
@@ -649,7 +769,7 @@
             <span>⚙️</span>
             <span class="item-title">${job.title}</span>
           </div>
-          <span style="font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('job', '${job.id}', '${job.title}')">✏️</span>
+          <span style="font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditJobCardModal('${job.id}')">✏️ Edit</span>
         </div>
         <div class="progress-container">
           <div class="progress-info"><span>Progress</span><span>${pct}% (${completed}/${total})</span></div>
@@ -670,7 +790,10 @@
         <div class="step-card">
           <div class="step-header">
             <span class="step-title">${step.title}</span>
-            <span class="badge-status ${statusClass}" onclick="cycleStepStatusForward('${step.id}')">${step.status}</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span class="badge-status ${statusClass}" onclick="cycleStepStatusForward('${step.id}')">${step.status}</span>
+              <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditStepModal('${step.id}')">✏️</span>
+            </div>
           </div>
           <div class="step-meta">
             <span class="meta-pill meta-assignee">👤 ${step.assignee || 'UNASSIGNED'}</span>
@@ -682,6 +805,7 @@
       `;
     }
 
+    // Forward Status Cycle: Not Started ➔ In Progress ➔ In Hold ➔ Completed
     async function cycleStepStatusForward(stepId) {
       const forwardSequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
       let targetStep = null;
@@ -744,28 +868,102 @@
     }
 
     /* ==========================================================================
-       OTHERS TAB & NATIVE SEARCHABLE PICKER
+       OTHERS TAB - FOLDER-STYLE DRILL-DOWN CATEGORY VIEW
        ========================================================================== */
     function renderOthersContent() {
       const container = document.getElementById('others-items-container');
-      container.innerHTML = customOthersCategories.map(cat => {
-        let matchingSteps = [];
-        jobCards.forEach(j => j.steps.forEach(s => {
-          if (s.category === cat.id) matchingSteps.push({ ...s, jobTitle: j.title });
-        }));
+      const controls = document.getElementById('others-category-controls');
+      container.innerHTML = '';
+      controls.innerHTML = '';
 
-        return `
-          <div class="job-card-item">
-            <div class="job-header">
-              <div class="item-title">${cat.emoji} ${cat.title}</div>
-              <button class="chip-btn" onclick="openCategoryPicker('${cat.id}', '${cat.title}')">+ Add Job/Step</button>
-            </div>
-            <div class="step-list" style="margin-top:10px;">
-              ${matchingSteps.length ? matchingSteps.map(s => createStepHTML(s)).join('') : '<div style="font-size:12px; color:var(--text-muted);">No operations assigned to this category.</div>'}
-            </div>
+      // If Drilled into a Category
+      if (selectedCategoryDrillDownId) {
+        const currentCat = customOthersCategories.find(c => c.id === selectedCategoryDrillDownId);
+        controls.innerHTML = `
+          <button class="btn-back" onclick="drillBackToOthersRoot()">⬅️ Back to OTHERS Categories</button>
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <button class="chip-btn" onclick="openCategoryPicker('${currentCat.id}', '${currentCat.title}')">+ Add Job/Step</button>
           </div>
         `;
-      }).join('');
+
+        let matchingSteps = [];
+        jobCards.forEach(j => j.steps.forEach(s => {
+          if (s.category === selectedCategoryDrillDownId) matchingSteps.push({ ...s, jobTitle: j.title });
+        }));
+
+        if (!matchingSteps.length) {
+          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">[ No operations assigned to ${currentCat.title} ]</div>`;
+          return;
+        }
+
+        matchingSteps.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'job-card-item';
+          card.innerHTML = `
+            <div style="display:flex; justify-style:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:11px; color:var(--accent-purple);">${s.jobTitle}</span>
+              <button class="chip-btn" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="removeStepFromCategory('${s.id}')">➖ Remove</button>
+            </div>
+            ${createStepHTML(s)}
+          `;
+          container.appendChild(card);
+        });
+
+      } else {
+        // Top Level Categories View
+        controls.innerHTML = `<button class="chip-btn" style="margin-bottom:14px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
+
+        container.innerHTML = customOthersCategories.map(cat => {
+          let count = 0;
+          jobCards.forEach(j => j.steps.forEach(s => { if (s.category === cat.id) count++; }));
+
+          return `
+            <div class="folder-item" onclick="drillIntoCategory('${cat.id}')">
+              <div class="folder-header">
+                <div class="folder-title-group">
+                  <span>${cat.emoji}</span>
+                  <span class="item-title">${cat.title}</span>
+                </div>
+                <span style="font-size:12px; color:var(--accent-teal);">${count} Items ➔</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function drillIntoCategory(catId) {
+      selectedCategoryDrillDownId = catId;
+      renderOthersContent();
+    }
+
+    function drillBackToOthersRoot() {
+      selectedCategoryDrillDownId = null;
+      renderOthersContent();
+    }
+
+    async function removeStepFromCategory(stepId) {
+      let targetStep = null;
+      jobCards.forEach(j => j.steps.forEach(s => {
+        if (s.id === stepId) {
+          s.category = '';
+          targetStep = s;
+        }
+      }));
+
+      renderOthersContent();
+
+      if (targetStep) {
+        const initData = tg?.initData || '';
+        const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+        try {
+          await fetch(`${WORKER_API_URL}/api/steps`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+            body: JSON.stringify({ stepId: targetStep.id, category: '' })
+          });
+        } catch (e) {}
+      }
     }
 
     function openCategoryPicker(catId, catTitle) {
@@ -807,7 +1005,7 @@
         }
       }));
 
-      renderAll();
+      renderOthersContent();
 
       if (targetStep) {
         const initData = tg?.initData || '';
@@ -899,7 +1097,7 @@
       const list = document.getElementById('steps-builder-list');
       list.innerHTML = builderSteps.map((s, idx) => `
         <div class="builder-step-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; justify-style:space-between; align-items:center;">
             <strong style="font-size:12px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
             <button type="button" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
           </div>
