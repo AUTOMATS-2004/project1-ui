@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Gemini Task Matrix</title>
+  <title>TRACE Matrix</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,73 +44,115 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-dark); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
-    header { padding: 14px 18px; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-    .header-brand { display: flex; align-items: center; gap: 10px; }
-    .gemini-spark { width: 14px; height: 14px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 4px; box-shadow: 0 0 12px rgba(124, 77, 255, 0.5); }
-    .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .user-pill { font-size: 11px; font-weight: 500; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 4px 10px; border-radius: 20px; }
+    /* Ultra-Slim Header */
+    header {
+      padding: 8px 14px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: all 0.2s ease;
+    }
 
-    .search-bar-container { padding: 10px 18px; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); display: flex; gap: 8px; position: sticky; top: 51px; z-index: 950; }
+    header.compact-hidden {
+      display: none;
+    }
 
-    .nav-primary { display: flex; align-items: center; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); padding: 4px 12px; position: sticky; top: 101px; z-index: 900; }
-    .primary-tab { flex: 1; padding: 12px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; text-transform: uppercase; text-align: center; }
+    .header-brand { display: flex; align-items: center; gap: 8px; }
+    .gemini-spark { width: 12px; height: 12px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 3px; box-shadow: 0 0 10px rgba(124, 77, 255, 0.5); }
+    .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
+    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 2px 8px; border-radius: 12px; }
+
+    /* Collapsible Search Container */
+    .search-bar-container {
+      padding: 6px 14px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 6px;
+      position: sticky;
+      top: 38px;
+      z-index: 950;
+      transition: all 0.2s ease;
+    }
+
+    .search-bar-container.compact-hidden {
+      display: none;
+    }
+
+    .nav-primary {
+      display: flex;
+      align-items: center;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+    }
+
+    .primary-tab { flex: 1; padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; text-align: center; }
     .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 
-    .sub-nav-container { background: var(--card-bg); border-bottom: 1px solid var(--border-subtle); padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .sub-nav-container { background: var(--card-bg); border-bottom: 1px solid var(--border-subtle); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
     .sub-nav-container.collapsed { display: none; }
-    .sub-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .sub-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
     .sub-row::-webkit-scrollbar { display: none; }
 
-    .chip-btn { font-size: 11px; font-weight: 500; padding: 6px 14px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
+    .chip-btn { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
     .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); font-weight: 600; }
-    .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 6px; }
 
     .toggle-subnav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; padding: 0 8px; cursor: pointer; }
 
-    .view-content { padding: 16px; max-width: 800px; margin: 0 auto; width: 100%; }
+    .view-content { padding: 12px; max-width: 800px; margin: 0 auto; width: 100%; }
     .tab-page { display: none; }
     .tab-page.active { display: block; }
 
-    .tree-breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; overflow-x: auto; }
+    .tree-breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; overflow-x: auto; }
     .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
 
-    .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; position: relative; user-select: none; }
+    .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; position: relative; user-select: none; }
     .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
-    .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 10px; }
-    .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 8px; }
+    .item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
-    .progress-container { margin-top: 10px; }
-    .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
-    .progress-track { height: 6px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
+    .progress-container { margin-top: 8px; }
+    .progress-info { display: flex; justify-style: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
+    .progress-track { height: 5px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
 
-    .step-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; position: relative; }
-    .step-header { display: flex; justify-style: space-between; align-items: flex-start; margin-bottom: 6px; }
-    .step-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .step-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; position: relative; }
+    .step-header { display: flex; justify-style: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .step-title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
 
-    .badge-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
+    .badge-status { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
     .status-notstarted { background: rgba(142, 145, 143, 0.15); color: var(--text-muted); border: 1px solid var(--text-muted); }
     .status-inprogress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
     .status-inhold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
     .status-completed { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-    .step-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .step-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
     .meta-pill { background: var(--card-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); }
     .meta-assignee { color: var(--accent-teal); font-family: var(--font-mono); }
 
-    .fab { position: fixed; bottom: 24px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #000; border: none; box-shadow: 0 4px 20px rgba(168, 199, 250, 0.3); font-size: 26px; font-weight: bold; cursor: pointer; z-index: 500; }
+    .fab { position: fixed; bottom: 20px; right: 16px; width: 50px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #000; border: none; box-shadow: 0 4px 20px rgba(168, 199, 250, 0.3); font-size: 24px; font-weight: bold; cursor: pointer; z-index: 500; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-drawer { background: var(--card-bg); border-top: 1px solid var(--border-accent); border-radius: 20px 20px 0 0; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 20px; transform: translateY(100%); transition: transform 0.25s ease; }
+    .modal-drawer { background: var(--card-bg); border-top: 1px solid var(--border-accent); border-radius: 18px 18px 0 0; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 18px; transform: translateY(100%); transition: transform 0.25s ease; }
     .modal-overlay.active .modal-drawer { transform: translateY(0); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; }
-    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; }
+    .modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
 
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
     
     select.form-select, input.form-input, textarea.form-textarea {
       width: 100%;
@@ -118,9 +160,9 @@
       color: #000000 !important;
       font-weight: 600 !important;
       border: 1px solid var(--border-accent) !important;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border-radius: var(--radius-sm);
-      font-size: 13px;
+      font-size: 12px;
       outline: none;
     }
 
@@ -130,37 +172,39 @@
       font-weight: 600 !important;
     }
 
-    .btn-action { width: 100%; background: linear-gradient(135deg, var(--accent-blue), #7c4dff); color: #000; border: none; font-weight: 600; font-size: 13px; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 10px; }
+    .btn-action { width: 100%; background: linear-gradient(135deg, var(--accent-blue), #7c4dff); color: #000; border: none; font-weight: 600; font-size: 12px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 8px; }
 
-    .builder-step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .builder-step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; }
 
-    .context-menu-option { padding: 14px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 12px; cursor: pointer; }
-    .picker-item { padding: 12px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; font-size: 13px; }
-    .picker-item:hover { background: var(--card-hover); }
+    .context-menu-option { padding: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <header>
+  <!-- Top Slim Header -->
+  <header id="top-header">
     <div class="header-brand">
       <div class="gemini-spark"></div>
-      <div class="header-title">Matrix Operations</div>
+      <div class="header-title">TRACE v3.0</div>
     </div>
     <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
   </header>
 
-  <div class="search-bar-container">
-    <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Search Folders, Jobs, Steps, Specs, Notes, Assignees..." oninput="handleUniversalSearch()" />
+  <!-- Collapsible Universal Search Bar -->
+  <div class="search-bar-container" id="top-search-bar">
+    <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Deep Search Specs, Jobs, Steps, Notes..." oninput="handleUniversalSearch()" />
     <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
   </div>
 
+  <!-- Primary Tab Bar -->
   <nav class="nav-primary">
     <button class="primary-tab active" onclick="switchPrimaryTab('tree')">TREE</button>
     <button class="primary-tab" onclick="switchPrimaryTab('schedule')">SCHEDULE</button>
     <button class="primary-tab" onclick="switchPrimaryTab('others')">OTHERS</button>
-    <button class="toggle-subnav-btn" onclick="toggleSubNav()" id="subnav-toggle-icon">▲</button>
+    <button class="toggle-subnav-btn" onclick="toggleHeaderCompactMode()" id="subnav-toggle-icon">▲</button>
   </nav>
 
+  <!-- Sub-Nav Filter Row -->
   <div class="sub-nav-container" id="sub-nav-container">
     <div class="sub-row" id="sub-row-tabs" style="display:none;">
       <button class="chip-btn active" onclick="setSubTab('today')">TODAY</button>
@@ -177,31 +221,26 @@
   </div>
 
   <main class="view-content">
-
-    <!-- View Page 1: TREE -->
     <div id="page-tree" class="tab-page active">
       <div id="tree-nav-controls"></div>
       <div class="tree-breadcrumbs" id="tree-breadcrumbs">
         <span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button class="chip-btn" onclick="openAddFolderModal()">+ New Folder</button>
         <button class="chip-btn" onclick="openAddJobCardModal()">+ New Job Card</button>
       </div>
       <div id="tree-items-container"></div>
     </div>
 
-    <!-- View Page 2: SCHEDULE -->
     <div id="page-schedule" class="tab-page">
       <div id="schedule-items-container"></div>
     </div>
 
-    <!-- View Page 3: OTHERS -->
     <div id="page-others" class="tab-page">
       <div id="others-category-controls"></div>
       <div id="others-items-container"></div>
     </div>
-
   </main>
 
   <button class="fab" onclick="openAddJobCardModal()">+</button>
@@ -209,11 +248,11 @@
   <!-- Context Menu Drawer -->
   <div class="modal-overlay" id="modal-context-menu">
     <div class="modal-drawer" style="padding:10px;">
-      <div style="text-align:center; padding:8px; font-size:12px; color:var(--text-muted);" id="context-item-title">Item Options</div>
+      <div style="text-align:center; padding:6px; font-size:11px; color:var(--text-muted);" id="context-item-title">Item Options</div>
       <div class="context-menu-option" onclick="handleContextAction('edit')">✏️ Edit Full / View Details</div>
       <div class="context-menu-option" onclick="handleContextAction('copy')">📋 Copy / Duplicate</div>
       <div class="context-menu-option" style="color:var(--accent-red);" onclick="handleContextAction('delete')">🗑️ Delete Permanently</div>
-      <button class="btn-action" style="background:var(--bg-dark); color:var(--text-muted); margin-top:10px;" onclick="closeModal('modal-context-menu')">Cancel</button>
+      <button class="btn-action" style="background:var(--bg-dark); color:var(--text-muted); margin-top:8px;" onclick="closeModal('modal-context-menu')">Cancel</button>
     </div>
   </div>
 
@@ -225,7 +264,7 @@
         <button class="close-btn" onclick="closeModal('modal-category-picker')">&times;</button>
       </div>
       <input type="text" id="category-search-input" class="form-input" placeholder="Type to search Operation Step or Job..." oninput="renderCategoryPickerList()" />
-      <div id="category-picker-results" style="max-height:300px; overflow-y:auto; margin-top:10px;"></div>
+      <div id="category-picker-results" style="max-height:280px; overflow-y:auto; margin-top:8px;"></div>
     </div>
   </div>
 
@@ -299,7 +338,7 @@
         <div class="form-group">
           <label class="form-label">Process Chart Operations Sequence</label>
           <div id="steps-builder-list"></div>
-          <button type="button" class="chip-btn" style="margin-top:8px;" onclick="addRichStepInput()">+ Add Operation Step</button>
+          <button type="button" class="chip-btn" style="margin-top:6px;" onclick="addRichStepInput()">+ Add Operation Step</button>
         </div>
 
         <button type="submit" class="btn-action">Save to Google Sheets</button>
@@ -320,7 +359,7 @@
           <input type="text" id="edit-step-title" class="form-input" required />
         </div>
 
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:6px;">
           <div style="flex:1;" class="form-group">
             <label class="form-label">Assignee</label>
             <select id="edit-step-assignee" class="form-select">
@@ -342,7 +381,7 @@
           </div>
         </div>
 
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:6px;">
           <div style="flex:1;" class="form-group">
             <label class="form-label">Deadline Date</label>
             <input type="date" id="edit-step-date" class="form-input" />
@@ -361,7 +400,7 @@
         <div class="form-group">
           <label class="form-label">Attach File from Device (PDF, Image, Drawing)</label>
           <input type="file" id="edit-step-file-input" class="form-input" style="background:#ffffff !important; color:#000000 !important;" />
-          <div id="edit-step-current-attachment" style="font-size:11px; color:var(--accent-blue); margin-top:4px;"></div>
+          <div id="edit-step-current-attachment" style="font-size:10px; color:var(--accent-blue); margin-top:3px;"></div>
         </div>
 
         <button type="submit" class="btn-action">Update Operation Step</button>
@@ -372,7 +411,12 @@
   <script>
     const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
     const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      if (tg.setHeaderColor) tg.setHeaderColor('#131314');
+      if (tg.setBackgroundColor) tg.setBackgroundColor('#131314');
+    }
 
     const userBadge = document.getElementById('user-pill');
     if (tg?.initDataUnsafe?.user) {
@@ -461,12 +505,25 @@
       updateSubNavVisibility();
     }
 
-    function toggleSubNav() {
+    // Toggle Header & Search Compact Mode
+    function toggleHeaderCompactMode() {
       subNavExpanded = !subNavExpanded;
-      const container = document.getElementById('sub-nav-container');
+      const topHeader = document.getElementById('top-header');
+      const topSearch = document.getElementById('top-search-bar');
+      const subNav = document.getElementById('sub-nav-container');
       const icon = document.getElementById('subnav-toggle-icon');
-      container.classList.toggle('collapsed', !subNavExpanded);
-      icon.innerText = subNavExpanded ? '▲' : '▼';
+
+      if (subNavExpanded) {
+        topHeader.classList.remove('compact-hidden');
+        topSearch.classList.remove('compact-hidden');
+        subNav.classList.remove('collapsed');
+        icon.innerText = '▲';
+      } else {
+        topHeader.classList.add('compact-hidden');
+        topSearch.classList.add('compact-hidden');
+        subNav.classList.add('collapsed');
+        icon.innerText = '▼';
+      }
     }
 
     function updateSubNavVisibility() {
@@ -534,9 +591,7 @@
       return data.fileUrl;
     }
 
-    /* ==========================================================================
-       LONG-PRESS & CONTEXT MENU ENGINE
-       ========================================================================== */
+    /* Long-Press Listener Engine */
     function attachLongPressListener(element, type, id, title) {
       let timer = null;
 
@@ -580,9 +635,7 @@
       }
     }
 
-    /* ==========================================================================
-       FULL EDIT MODALS FOR FOLDERS, JOBS, & INDIVIDUAL STEPS
-       ========================================================================== */
+    /* Edit Modals */
     function openFullEditFolderModal(folderId) {
       const folder = folders.find(f => f.id === folderId);
       if (!folder) return;
@@ -766,23 +819,19 @@
       return list;
     }
 
-    /* ==========================================================================
-       RENDER TREE VIEW & DEEP RECURSIVE SEARCH
-       ========================================================================== */
+    /* RENDER TREE VIEW */
     function renderTreeFolderContent() {
       const container = document.getElementById('tree-items-container');
       const navControls = document.getElementById('tree-nav-controls');
       container.innerHTML = '';
       navControls.innerHTML = '';
 
-      // Back Button
       const currentFolder = folders.find(f => f.id === currentFolderId);
       if (currentFolder && currentFolder.parentId) {
         const parentFolder = folders.find(f => f.id === currentFolder.parentId) || { name: 'Root', id: 'root' };
         navControls.innerHTML = `<button class="btn-back" onclick="navToFolder('${parentFolder.id}')">⬅️ Back to ${parentFolder.name}</button>`;
       }
 
-      // Breadcrumbs
       const breadcrumbs = document.getElementById('tree-breadcrumbs');
       breadcrumbs.innerHTML = `<span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>`;
       
@@ -794,9 +843,8 @@
       let subFolders = folders.filter(f => f.parentId === currentFolderId);
       let currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
 
-      // Deep Universal Search Traversal
       if (searchQuery) {
-        container.innerHTML += `<div style="font-size:12px; color:var(--accent-teal); margin-bottom:10px;">🔍 Deep Search matching: "${searchQuery}"</div>`;
+        container.innerHTML += `<div style="font-size:11px; color:var(--accent-teal); margin-bottom:8px;">🔍 Deep Search matching: "${searchQuery}"</div>`;
         
         subFolders = folders.filter(f => f.name.toLowerCase().includes(searchQuery));
         currentJobs = jobCards.filter(job => {
@@ -811,14 +859,13 @@
         });
 
         if (!subFolders.length && !currentJobs.length) {
-          container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--accent-red); font-weight:600;">⚠️ No search results found matching "${searchQuery}"</div>`;
+          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--accent-red); font-weight:600;">⚠️ No search results found matching "${searchQuery}"</div>`;
           return;
         }
       }
 
       currentJobs = getFilteredAndSortedJobs(currentJobs);
 
-      // Render Folders
       subFolders.forEach(folder => {
         const item = document.createElement('div');
         item.className = 'folder-item';
@@ -829,18 +876,17 @@
               <span>📁</span>
               <span class="item-title">${folder.name}</span>
             </div>
-            <span style="font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span>
+            <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span>
           </div>`;
 
         attachLongPressListener(item, 'folder', folder.id, folder.name);
         container.appendChild(item);
       });
 
-      // Render Job Cards
       currentJobs.forEach(job => container.appendChild(createJobCardElement(job)));
 
       if (!subFolders.length && !currentJobs.length) {
-        container.innerHTML += `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">[ Folder Empty ]</div>`;
+        container.innerHTML += `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">[ Folder Empty ]</div>`;
       }
     }
 
@@ -866,7 +912,7 @@
             <span>⚙️</span>
             <span class="item-title">${job.title}</span>
           </div>
-          <span style="font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditJobCardModal('${job.id}')">✏️ Edit</span>
+          <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditJobCardModal('${job.id}')">✏️ Edit</span>
         </div>
         <div class="progress-container">
           <div class="progress-info"><span>Progress</span><span>${pct}% (${completed}/${total})</span></div>
@@ -889,20 +935,19 @@
             <span class="step-title">${step.title}</span>
             <div style="display:flex; gap:6px; align-items:center;">
               <span class="badge-status ${statusClass}" onclick="cycleStepStatusForward('${step.id}')">${step.status}</span>
-              <span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditStepModal('${step.id}')">✏️</span>
+              <span style="font-size:10px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditStepModal('${step.id}')">✏️</span>
             </div>
           </div>
           <div class="step-meta">
             <span class="meta-pill meta-assignee">👤 ${step.assignee || 'UNASSIGNED'}</span>
             ${step.date ? `<span class="meta-pill">📅 ${step.date} ${step.time || ''}</span>` : ''}
             ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" class="meta-pill" style="color:var(--accent-blue); text-decoration:none;">📎 PDF/Image Document</a>` : ''}
-            ${step.notes ? `<div style="width:100%; font-size:11px; color:var(--text-muted); margin-top:4px;">📝 ${step.notes}</div>` : ''}
+            ${step.notes ? `<div style="width:100%; font-size:10px; color:var(--text-muted); margin-top:3px;">📝 ${step.notes}</div>` : ''}
           </div>
         </div>
       `;
     }
 
-    // Forward Status Cycle: Not Started ➔ In Progress ➔ In Hold ➔ Completed
     async function cycleStepStatusForward(stepId) {
       const forwardSequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
       let targetStep = null;
@@ -952,21 +997,18 @@
       }
 
       if (!allSteps.length) {
-        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">[ No operations scheduled matching filters ]</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">[ No operations scheduled ]</div>`;
         return;
       }
 
       allSteps.forEach(s => {
         const card = document.createElement('div');
         card.className = 'job-card-item';
-        card.innerHTML = `<div style="font-size:11px; color:var(--accent-purple); margin-bottom:4px;">${s.jobTitle}</div>${createStepHTML(s)}`;
+        card.innerHTML = `<div style="font-size:10px; color:var(--accent-purple); margin-bottom:3px;">${s.jobTitle}</div>${createStepHTML(s)}`;
         container.appendChild(card);
       });
     }
 
-    /* ==========================================================================
-       OTHERS TAB - FOLDER-STYLE DRILL-DOWN CATEGORY VIEW
-       ========================================================================== */
     function renderOthersContent() {
       const container = document.getElementById('others-items-container');
       const controls = document.getElementById('others-category-controls');
@@ -977,7 +1019,7 @@
         const currentCat = customOthersCategories.find(c => c.id === selectedCategoryDrillDownId);
         controls.innerHTML = `
           <button class="btn-back" onclick="drillBackToOthersRoot()">⬅️ Back to OTHERS Categories</button>
-          <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <div style="display:flex; gap:6px; margin-bottom:12px;">
             <button class="chip-btn" onclick="openCategoryPicker('${currentCat.id}', '${currentCat.title}')">+ Add Job/Step</button>
           </div>
         `;
@@ -988,7 +1030,7 @@
         }));
 
         if (!matchingSteps.length) {
-          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">[ No operations assigned to ${currentCat.title} ]</div>`;
+          container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted);">[ No operations assigned to ${currentCat.title} ]</div>`;
           return;
         }
 
@@ -997,7 +1039,7 @@
           card.className = 'job-card-item';
           card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span style="font-size:11px; color:var(--accent-purple);">${s.jobTitle}</span>
+              <span style="font-size:10px; color:var(--accent-purple);">${s.jobTitle}</span>
               <button class="chip-btn" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="removeStepFromCategory('${s.id}')">➖ Remove</button>
             </div>
             ${createStepHTML(s)}
@@ -1006,7 +1048,7 @@
         });
 
       } else {
-        controls.innerHTML = `<button class="chip-btn" style="margin-bottom:14px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
+        controls.innerHTML = `<button class="chip-btn" style="margin-bottom:12px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
 
         container.innerHTML = customOthersCategories.map(cat => {
           let count = 0;
@@ -1019,7 +1061,7 @@
                   <span>${cat.emoji}</span>
                   <span class="item-title">${cat.title}</span>
                 </div>
-                <span style="font-size:12px; color:var(--accent-teal);">${count} Items ➔</span>
+                <span style="font-size:11px; color:var(--accent-teal);">${count} Items ➔</span>
               </div>
             </div>
           `;
@@ -1084,7 +1126,7 @@
       allSteps.forEach(s => {
         const item = document.createElement('div');
         item.className = 'picker-item';
-        item.innerHTML = `<strong>${s.title}</strong> <span style="font-size:11px; color:var(--accent-purple);">(${s.jobTitle})</span>`;
+        item.innerHTML = `<strong>${s.title}</strong> <span style="font-size:10px; color:var(--accent-purple);">(${s.jobTitle})</span>`;
         item.onclick = () => assignStepToCategory(s.id);
         resultsContainer.appendChild(item);
       });
@@ -1193,13 +1235,13 @@
       list.innerHTML = builderSteps.map((s, idx) => `
         <div class="builder-step-card">
           <div style="display:flex; justify-style:space-between; align-items:center;">
-            <strong style="font-size:12px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
-            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
+            <strong style="font-size:11px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong>
+            <button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button>
           </div>
 
           <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
 
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:6px;">
             <div style="flex:1;">
               <label class="form-label">Assignee</label>
               <select class="form-select" onchange="builderSteps[${idx}].assignee = this.value">
@@ -1221,7 +1263,7 @@
             </div>
           </div>
 
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:6px;">
             <div style="flex:1;">
               <label class="form-label">Calendar / Deadline Date</label>
               <input type="date" class="form-input" value="${s.date}" onchange="builderSteps[${idx}].date = this.value" />
