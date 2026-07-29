@@ -75,7 +75,7 @@
     .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
 
     .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; position: relative; user-select: none; }
-    .folder-header, .job-header { display: flex; justify-style: space-between; align-items: center; }
+    .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
     .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 10px; }
     .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
@@ -361,8 +361,9 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Attachment Link (PDF / Google Drive)</label>
-          <input type="url" id="edit-step-attachment" class="form-input" />
+          <label class="form-label">Attach File from Device (PDF, Image, Drawing)</label>
+          <input type="file" id="edit-step-file-input" class="form-input" style="background:#ffffff !important; color:#000000 !important;" />
+          <div id="edit-step-current-attachment" style="font-size:11px; color:var(--accent-blue); margin-top:4px;"></div>
         </div>
 
         <button type="submit" class="btn-action">Update Operation Step</button>
@@ -392,7 +393,7 @@
     let editingFolderId = null;
     let editingStepId = null;
     let activeTargetCategoryId = null;
-    let selectedCategoryDrillDownId = null; // null if top-level categories view, string if drilled into category
+    let selectedCategoryDrillDownId = null;
 
     let folders = [{ id: 'root', name: 'Root', parentId: null }];
     let jobCards = [];
@@ -497,6 +498,46 @@
       document.getElementById('modal-filter-sort').classList.add('active');
     }
 
+    /* Helper: Convert File to Base64 */
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    /* Helper: Upload File to Google Drive */
+    async function uploadSelectedFileToDrive(file, folderPathArray) {
+      const base64Data = await fileToBase64(file);
+      const initData = tg?.initData || '';
+      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
+
+      const payload = {
+        fileName: file.name,
+        mimeType: file.type,
+        base64Data: base64Data,
+        folderPath: folderPathArray
+      };
+
+      const res = await fetch(`${WORKER_API_URL}/api/upload-drive-file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Drive Upload Server Error (${res.status}): ${await res.text()}`);
+      }
+
+      const data = await res.json();
+      return data.fileUrl;
+    }
+
     /* ==========================================================================
        LONG-PRESS & CONTEXT MENU ENGINE
        ========================================================================== */
@@ -586,7 +627,13 @@
       document.getElementById('edit-step-date').value = targetStep.date || '';
       document.getElementById('edit-step-time').value = targetStep.time || '';
       document.getElementById('edit-step-notes').value = targetStep.notes || '';
-      document.getElementById('edit-step-attachment').value = targetStep.attachmentUrl || '';
+      
+      const attContainer = document.getElementById('edit-step-current-attachment');
+      if (targetStep.attachmentUrl) {
+        attContainer.innerHTML = `<a href="${targetStep.attachmentUrl}" target="_blank" style="color:var(--accent-blue);">Current File Link: ${targetStep.attachmentUrl}</a>`;
+      } else {
+        attContainer.innerHTML = '';
+      }
 
       document.getElementById('modal-step-editor').classList.add('active');
     }
@@ -601,7 +648,29 @@
       const date = document.getElementById('edit-step-date').value;
       const time = document.getElementById('edit-step-time').value;
       const notes = document.getElementById('edit-step-notes').value;
-      const attachmentUrl = document.getElementById('edit-step-attachment').value;
+      
+      let attachmentUrl = '';
+      const fileInput = document.getElementById('edit-step-file-input');
+      
+      if (fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        let parentJob = null;
+        jobCards.forEach(j => j.steps.forEach(s => { if (s.id === editingStepId) parentJob = j; }));
+        
+        let pathNames = ['DOCUMENTS AND ATTACHMENTS'];
+        if (parentJob) {
+          let fPath = getFolderPath(parentJob.folderId);
+          fPath.forEach(f => pathNames.push(f.name));
+          pathNames.push(parentJob.title);
+        }
+
+        try {
+          attachmentUrl = await uploadSelectedFileToDrive(file, pathNames);
+        } catch (uploadErr) {
+          alert(`File Upload Failed:\n${uploadErr.message}`);
+          return;
+        }
+      }
 
       const initData = tg?.initData || '';
       const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
@@ -671,6 +740,37 @@
       } catch (e) { alert("Delete network exception"); }
     }
 
+    /* Filter & Sort Engine Helper Functions */
+    function getFilteredAndSortedJobs(inputJobs) {
+      const sortOrder = document.getElementById('filter-sort-order')?.value || 'TITLE_ASC';
+      const folderScope = document.getElementById('filter-folder-scope')?.value || 'ALL';
+      const dateFrom = document.getElementById('filter-date-from')?.value || '';
+      const dateTo = document.getElementById('filter-date-to')?.value || '';
+
+      let list = [...inputJobs];
+
+      if (folderScope !== 'ALL') {
+        list = list.filter(j => j.folderId === folderScope);
+      }
+
+      if (dateFrom || dateTo) {
+        list = list.filter(j => j.steps.some(s => {
+          if (!s.date) return false;
+          if (dateFrom && s.date < dateFrom) return false;
+          if (dateTo && s.date > dateTo) return false;
+          return true;
+        }));
+      }
+
+      list.sort((a, b) => {
+        if (sortOrder === 'TITLE_ASC') return a.title.localeCompare(b.title);
+        if (sortOrder === 'TITLE_DESC') return b.title.localeCompare(a.title);
+        return 0;
+      });
+
+      return list;
+    }
+
     /* ==========================================================================
        RENDER TREE VIEW & DEEP RECURSIVE SEARCH
        ========================================================================== */
@@ -720,6 +820,8 @@
           return;
         }
       }
+
+      currentJobs = getFilteredAndSortedJobs(currentJobs);
 
       // Render Folders
       subFolders.forEach(folder => {
@@ -842,7 +944,7 @@
       const container = document.getElementById('schedule-items-container');
       container.innerHTML = '';
       let allSteps = [];
-      jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title })));
+      jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title, folderId: j.folderId })));
 
       if (currentAssigneeFilter !== 'ALL') allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
 
@@ -876,7 +978,6 @@
       container.innerHTML = '';
       controls.innerHTML = '';
 
-      // If Drilled into a Category
       if (selectedCategoryDrillDownId) {
         const currentCat = customOthersCategories.find(c => c.id === selectedCategoryDrillDownId);
         controls.innerHTML = `
@@ -900,7 +1001,7 @@
           const card = document.createElement('div');
           card.className = 'job-card-item';
           card.innerHTML = `
-            <div style="display:flex; justify-style:space-between; align-items:center; margin-bottom:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
               <span style="font-size:11px; color:var(--accent-purple);">${s.jobTitle}</span>
               <button class="chip-btn" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="removeStepFromCategory('${s.id}')">➖ Remove</button>
             </div>
@@ -910,7 +1011,6 @@
         });
 
       } else {
-        // Top Level Categories View
         controls.innerHTML = `<button class="chip-btn" style="margin-bottom:14px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
 
         container.innerHTML = customOthersCategories.map(cat => {
@@ -1138,7 +1238,6 @@
           </div>
 
           <input type="text" class="form-input" placeholder="Manufacturing Specs / Notes" value="${s.notes}" oninput="builderSteps[${idx}].notes = this.value" />
-          <input type="url" class="form-input" placeholder="Attachment Link (PDF / Google Drive Image)" value="${s.attachmentUrl}" oninput="builderSteps[${idx}].attachmentUrl = this.value" />
         </div>
       `).join('');
     }
