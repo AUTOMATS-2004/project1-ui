@@ -3,1004 +3,411 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>TRACE Matrix</title>
-
+  <title>TRACE</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #131314;
-      --card-bg: #1e1f20;
-      --card-hover: #28292a;
-      --border-subtle: #2d2e31;
-      --border-accent: #3e4043;
-      --accent-blue: #a8c7fa;
-      --accent-blue-bg: rgba(168, 199, 250, 0.12);
-      --accent-purple: #d0bcff;
-      --accent-purple-bg: rgba(208, 188, 255, 0.12);
-      --accent-teal: #78d9ec;
-      --accent-teal-bg: rgba(120, 217, 236, 0.12);
-      --accent-amber: #fdd663;
-      --accent-amber-bg: rgba(253, 214, 99, 0.12);
-      --accent-green: #6dd58c;
-      --accent-green-bg: rgba(109, 213, 140, 0.12);
-      --accent-red: #f28b82;
-      --text-primary: #e3e3e3;
-      --text-secondary: #c4c7c5;
-      --text-muted: #8e918f;
-      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
+      --bg-dark: #131314; --card-bg: #1e1f20; --card-hover: #28292a; --border-subtle: #2d2e31;
+      --accent-blue: #a8c7fa; --accent-blue-bg: rgba(168,199,250,0.15);
+      --accent-teal: #78d9ec; --accent-green: #6dd58c; --accent-amber: #fdd663; --accent-red: #f28b82;
+      --text-primary: #e3e3e3; --text-muted: #8e918f;
+      --font-main: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: var(--font-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding-top: 85px !important;
-      padding-bottom: 80px;
-    }
-
-    header {
-      padding: 10px 16px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-
-    header.compact-hidden { display: none; }
-
-    .header-brand { display: flex; align-items: center; gap: 8px; }
-    .gemini-spark { width: 12px; height: 12px; background: linear-gradient(135deg, #7c4dff, #448aff, #00e5ff); border-radius: 3px; box-shadow: 0 0 10px rgba(124, 77, 255, 0.5); }
-    .header-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-primary); text-transform: uppercase; }
-    .user-pill { font-size: 10px; font-weight: 600; color: var(--accent-blue); background: var(--accent-blue-bg); border: 1px solid rgba(168, 199, 250, 0.25); padding: 3px 8px; border-radius: 12px; }
-
-    .search-bar-container {
-      padding: 8px 14px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      gap: 6px;
-      position: fixed;
-      top: 40px;
-      left: 0;
-      right: 0;
-      z-index: 950;
-      transition: all 0.2s ease;
-    }
-
-    .search-bar-container.compact-hidden { display: none; }
-
-    .nav-primary {
-      display: flex;
-      align-items: center;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 2px 8px;
-      position: relative;
-      z-index: 900;
-    }
-
-    .primary-tab { flex: 1; padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; text-align: center; }
+    body { background: var(--bg-dark); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; padding-bottom: 80px; }
+    
+    /* Native Telegram App - No Manual Header Required */
+    .search-bar-container { padding: 10px 14px; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); display: flex; gap: 8px; position: sticky; top: 0; z-index: 950; }
+    .nav-primary { display: flex; background: var(--bg-dark); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 55px; z-index: 900; }
+    .primary-tab { flex: 1; padding: 12px 0; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
     .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
-
-    .sub-nav-container { background: var(--card-bg); border-bottom: 1px solid var(--border-subtle); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
-    .sub-nav-container.collapsed { display: none; }
-    .sub-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    
+    .sub-row { display: flex; gap: 6px; padding: 10px 14px; background: var(--card-bg); overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border-subtle); }
     .sub-row::-webkit-scrollbar { display: none; }
-
-    .chip-btn { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
-    .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); font-weight: 600; }
-    .btn-back { background: var(--card-hover); color: var(--accent-teal); border: 1px solid var(--accent-teal); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 6px; }
-
-    .toggle-subnav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; padding: 0 8px; cursor: pointer; }
-
-    .view-content { padding: 12px; max-width: 800px; margin: 0 auto; width: 100%; }
-    .tab-page { display: none; }
-    .tab-page.active { display: block; }
-
-    .tree-breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; overflow-x: auto; }
-    .breadcrumb-item { color: var(--accent-teal); cursor: pointer; }
-
-    .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; position: relative; user-select: none; }
-    .folder-header, .job-header { display: flex; justify-content: space-between; align-items: center; }
-    .folder-title-group, .job-title-group { display: flex; align-items: center; gap: 8px; }
-    .item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-
-    .progress-container { margin-top: 8px; }
-    .progress-info { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-family: var(--font-mono); }
-    .progress-track { height: 5px; width: 100%; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); border-radius: 3px; }
-
-    .step-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; position: relative; }
-    .step-header { display: flex; justify-style: space-between; align-items: flex-start; margin-bottom: 4px; }
-    .step-title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-
-    .badge-status { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 12px; text-transform: uppercase; cursor: pointer; }
-    .status-notstarted { background: rgba(142, 145, 143, 0.15); color: var(--text-muted); border: 1px solid var(--text-muted); }
+    .chip-btn { font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: 20px; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-primary); white-space: nowrap; cursor: pointer; }
+    .chip-btn.active { background: var(--accent-blue-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
+    
+    .view-content { padding: 14px; max-width: 800px; margin: 0 auto; width: 100%; display: none; }
+    .view-content.active { display: block; }
+    
+    .folder-item, .job-card-item { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+    .job-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .job-title-group { display: flex; flex-direction: column; gap: 4px; }
+    .item-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .folder-head-badge { font-size: 10px; color: var(--accent-teal); font-family: var(--font-mono); }
+    
+    .step-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; transition: max-height 0.3s ease; }
+    .step-list.collapsed { display: none; }
+    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; }
+    .step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .step-title { font-size: 13px; font-weight: 500; }
+    
+    .badge-status { font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; cursor: pointer; }
+    .status-notstarted { background: #333; color: #aaa; border: 1px solid #555; }
     .status-inprogress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
     .status-inhold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
     .status-completed { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid var(--accent-green); }
-
-    .step-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-    .meta-pill { background: var(--card-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); }
-    .meta-assignee { color: var(--accent-teal); font-family: var(--font-mono); }
-
-    .fab { position: fixed; bottom: 20px; right: 16px; width: 50px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #000; border: none; box-shadow: 0 4px 20px rgba(168, 199, 250, 0.3); font-size: 24px; font-weight: bold; cursor: pointer; z-index: 500; }
-
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-    .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-drawer { background: var(--card-bg); border-top: 1px solid var(--border-accent); border-radius: 18px 18px 0 0; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 18px; transform: translateY(100%); transition: transform 0.25s ease; }
-    .modal-overlay.active .modal-drawer { transform: translateY(0); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; }
-    .modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
-
-    .form-group { margin-bottom: 12px; }
-    .form-label { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
     
-    select.form-select, input.form-input, textarea.form-textarea {
-      width: 100%;
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      font-weight: 600 !important;
-      border: 1px solid var(--border-accent) !important;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      outline: none;
-    }
-
+    .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent-blue); color: #000; border: none; font-size: 24px; font-weight: bold; cursor: pointer; z-index: 500; box-shadow: 0 4px 15px rgba(168,199,250,0.4); }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-drawer { background: var(--card-bg); border-top: 1px solid var(--border-subtle); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; transform: translateY(100%); transition: transform 0.25s ease; }
+    .modal-overlay.active .modal-drawer { transform: translateY(0); }
+    
+    .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    select.form-select, input.form-input, textarea.form-textarea { width: 100%; background-color: #ffffff !important; color: #000000 !important; font-weight: 600 !important; border: 2px solid var(--accent-blue) !important; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 14px; outline: none; }
     select.form-select option { background-color: #ffffff !important; color: #000000 !important; font-weight: 600 !important; }
-
-    .btn-action { width: 100%; background: linear-gradient(135deg, var(--accent-blue), #7c4dff); color: #000; border: none; font-weight: 600; font-size: 12px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 8px; }
-
-    .builder-step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; }
-
-    .context-menu-option { padding: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 10px; cursor: pointer; }
-
-    /* MODERN LOADING OVERLAY */
-    .loader-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(19, 19, 20, 0.9); backdrop-filter: blur(10px);
-      z-index: 9999; display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-    }
+    
+    .btn-action { width: 100%; background: var(--accent-blue); color: #000; border: none; font-weight: 700; font-size: 14px; padding: 14px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    
+    .loader-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(19,19,20,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .loader-overlay.active { opacity: 1; pointer-events: auto; }
-    .gemini-spinner {
-      width: 50px; height: 50px; border-radius: 50%;
-      border: 4px solid transparent; border-top-color: var(--accent-blue);
-      border-right-color: var(--accent-purple);
-      animation: spin 1s linear infinite; margin-bottom: 20px;
-      box-shadow: 0 0 15px rgba(168, 199, 250, 0.4);
-    }
-    .loader-text {
-      font-size: 14px; font-weight: 600; color: var(--text-primary);
-      letter-spacing: 1px; font-family: var(--font-mono);
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-    /* Toast Banner */
-    .toast-notification {
-      position: fixed; bottom: 80px; left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #28292a; border: 1px solid var(--accent-blue);
-      color: var(--text-primary); padding: 10px 18px;
-      border-radius: 20px; font-size: 12px; font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 3000;
-      opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-    }
-    .toast-notification.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .gemini-spinner { width: 40px; height: 40px; border-radius: 50%; border: 4px solid transparent; border-top-color: var(--accent-blue); border-right-color: var(--accent-purple); animation: spin 1s linear infinite; margin-bottom: 16px; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <div class="loader-overlay" id="global-loader">
-    <div class="gemini-spinner"></div>
-    <div class="loader-text">SYNCING WITH MATRIX...</div>
-  </div>
+  <div class="loader-overlay" id="global-loader"><div class="gemini-spinner"></div><div style="font-family:var(--font-mono); color:var(--text-primary); font-size:14px; font-weight:600;">SYNCING WITH MATRIX...</div></div>
 
-  <header id="top-header">
-    <div class="header-brand">
-      <div class="gemini-spark"></div>
-      <div class="header-title">TRACE v3.0</div>
-    </div>
-    <div class="user-pill" id="user-pill">👤 RAVI KUMAR</div>
-  </header>
-
-  <div class="search-bar-container" id="top-search-bar">
-    <input type="text" id="global-search-input" class="form-input" style="flex:1;" placeholder="🔍 Deep Search Specs, Jobs, Steps..." oninput="handleUniversalSearch()" />
-    <button class="chip-btn" onclick="openFilterSortModal()">⚙️ Filters</button>
+  <div class="search-bar-container">
+    <input type="text" id="global-search-input" class="form-input" style="margin-bottom:0;" placeholder="🔍 Search Specs, Jobs, Folders..." oninput="renderAll()" />
+    <button class="chip-btn" onclick="openFilterModal()">⚙️ Filter</button>
   </div>
 
   <nav class="nav-primary">
-    <button class="primary-tab active" onclick="switchPrimaryTab('tree')">TREE</button>
-    <button class="primary-tab" onclick="switchPrimaryTab('schedule')">SCHEDULE</button>
-    <button class="primary-tab" onclick="switchPrimaryTab('others')">OTHERS</button>
-    <button class="toggle-subnav-btn" onclick="toggleHeaderCompactMode()" id="subnav-toggle-icon">▲</button>
+    <button class="primary-tab active" onclick="switchTab('tree')">TREE</button>
+    <button class="primary-tab" onclick="switchTab('schedule')">SCHEDULE</button>
+    <button class="primary-tab" onclick="switchTab('others')">OTHERS</button>
   </nav>
 
-  <div class="sub-nav-container" id="sub-nav-container">
-    <div class="sub-row" id="sub-row-tabs" style="display:none;">
-      <button class="chip-btn active" onclick="setSubTab('today')">TODAY</button>
-      <button class="chip-btn" onclick="setSubTab('deadline')">DEADLINE</button>
-      <button class="chip-btn" onclick="setSubTab('queue')">QUEUE</button>
-    </div>
-    <div class="sub-row" id="sub-row-filters">
-      <button class="chip-btn active" onclick="setAssigneeFilter('ALL')">ALL</button>
-      <button class="chip-btn" onclick="setAssigneeFilter('JEEVAN')">JEEVAN</button>
-      <button class="chip-btn" onclick="setAssigneeFilter('RAVI KUMAR')">RAVI KUMAR</button>
-      <button class="chip-btn" onclick="setAssigneeFilter('SANANTH')">SANANTH</button>
-      <button class="chip-btn" onclick="setAssigneeFilter('UNASSIGNED')">UNASSIGNED</button>
-    </div>
+  <div class="sub-row" id="schedule-sub-nav" style="display:none;">
+    <button class="chip-btn active" onclick="setSubTab('today')">TODAY</button>
+    <button class="chip-btn" onclick="setSubTab('deadline')">DEADLINE</button>
+    <button class="chip-btn" onclick="setSubTab('queue')">QUEUE</button>
   </div>
 
-  <main class="view-content">
-    <div id="page-tree" class="tab-page active">
-      <div id="tree-nav-controls"></div>
-      <div class="tree-breadcrumbs" id="tree-breadcrumbs">
-        <span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>
+  <div class="sub-row">
+    <button class="chip-btn active" onclick="setAssignee('ALL')">ALL</button>
+    <button class="chip-btn" onclick="setAssignee('JEEVAN')">JEEVAN</button>
+    <button class="chip-btn" onclick="setAssignee('RAVI KUMAR')">RAVI KUMAR</button>
+    <button class="chip-btn" onclick="setAssignee('SANANTH')">SANANTH</button>
+  </div>
+
+  <main>
+    <div id="page-tree" class="view-content active">
+      <div id="tree-nav" style="margin-bottom:14px;"></div>
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button class="chip-btn" onclick="openFolderModal()">+ New Folder</button>
+        <button class="chip-btn" onclick="openJobModal()">+ New Job Card</button>
       </div>
-      <div style="display:flex; gap:6px; margin-bottom:12px;">
-        <button class="chip-btn" onclick="openAddFolderModal()">+ New Folder</button>
-        <button class="chip-btn" onclick="openAddJobCardModal()">+ New Job Card</button>
-      </div>
-      <div id="tree-items-container"></div>
+      <div id="tree-container"></div>
     </div>
 
-    <div id="page-schedule" class="tab-page">
-      <div id="schedule-items-container"></div>
+    <div id="page-schedule" class="view-content">
+      <div id="schedule-container"></div>
+      <div style="margin-top:20px; border-top:1px solid var(--border-subtle); padding-top:14px;">
+        <h3 style="font-size:14px; color:var(--accent-green); margin-bottom:10px;">✅ Completed Operations</h3>
+        <div id="schedule-completed-container"></div>
+      </div>
     </div>
 
-    <div id="page-others" class="tab-page">
-      <div id="others-category-controls"></div>
-      <div id="others-items-container"></div>
+    <div id="page-others" class="view-content">
+      <button class="chip-btn" style="margin-bottom:14px;" onclick="addCategory()">+ Add Category</button>
+      <div id="others-container"></div>
+      
+      <!-- Static Completed Archive -->
+      <div class="folder-item" style="margin-top:20px; border-color:var(--accent-green);" onclick="renderCompletedArchive()">
+        <div class="job-header">
+          <div class="job-title-group"><span style="color:var(--accent-green);">✅</span><span class="item-title" style="color:var(--accent-green);">COMPLETED ARCHIVE</span></div>
+          <span style="font-size:12px; color:var(--text-muted);">➔</span>
+        </div>
+      </div>
     </div>
   </main>
 
-  <button class="fab" onclick="openAddJobCardModal()">+</button>
-  <div class="toast-notification" id="toast-banner">🔔 Notification</div>
+  <button class="fab" onclick="openJobModal()">+</button>
 
-  <!-- Context Menu Drawer -->
-  <div class="modal-overlay" id="modal-context-menu">
-    <div class="modal-drawer" style="padding:10px;">
-      <div style="text-align:center; padding:6px; font-size:11px; color:var(--text-muted);" id="context-item-title">Item Options</div>
-      <div class="context-menu-option" onclick="handleContextAction('edit')">✏️ Edit Full / View Details</div>
-      <div class="context-menu-option" onclick="handleContextAction('location')">📁 Open Item Folder Location</div>
-      <div class="context-menu-option" onclick="handleContextAction('copy')">📋 Copy / Duplicate</div>
-      <div class="context-menu-option" style="color:var(--accent-red);" onclick="handleContextAction('delete')">🗑️ Delete Permanently</div>
-      <button class="btn-action" style="background:var(--bg-dark); color:var(--text-muted); margin-top:8px;" onclick="closeModal('modal-context-menu')">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Filter & Sort Options Modal -->
-  <div class="modal-overlay" id="modal-filter-sort">
+  <!-- Job Card Modal -->
+  <div class="modal-overlay" id="modal-job">
     <div class="modal-drawer">
-      <div class="modal-header">
-        <div class="modal-title">⚙️ Filter & Sort Options</div>
-        <button class="close-btn" onclick="closeModal('modal-filter-sort')">&times;</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Sort Order</label>
-        <select id="filter-sort-order" class="form-select" onchange="renderAll()">
-          <option value="TITLE_ASC">Title (A-Z) [Ascending]</option>
-          <option value="TITLE_DESC">Title (Z-A) [Descending]</option>
-          <option value="DATE_ASC">Date Ascending (Earliest First)</option>
-          <option value="DATE_DESC">Date Descending (Latest First)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Folder Scope</label>
-        <select id="filter-folder-scope" class="form-select" onchange="renderAll()">
-          <option value="ALL">Entire System (Root & All Subfolders)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Date Range Scope</label>
-        <div style="display:flex; gap:8px;">
-          <input type="date" id="filter-date-from" class="form-input" onchange="renderAll()" />
-          <input type="date" id="filter-date-to" class="form-input" onchange="renderAll()" />
-        </div>
-      </div>
-      <button class="btn-action" onclick="closeModal('modal-filter-sort')">Apply Filters</button>
-    </div>
-  </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px;"><h3 style="font-size:16px;">Job Card Builder</h3><button class="chip-btn" onclick="closeAllModals()">X</button></div>
+      <form id="job-form" onsubmit="saveJob(event)">
+        <label class="form-label">Job Title</label>
+        <input type="text" id="job-title" class="form-input" required />
+        
+        <label class="form-label">Destination Folder</label>
+        <select id="job-folder" class="form-select"></select>
 
-  <!-- Modal: Folder Creator / Editor -->
-  <div class="modal-overlay" id="modal-folder">
-    <div class="modal-drawer">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-folder-title-header">New Folder</div>
-        <button class="close-btn" onclick="closeModal('modal-folder')">&times;</button>
-      </div>
-      <form onsubmit="saveFolder(event)">
-        <div class="form-group">
-          <label class="form-label">Folder Name</label>
-          <input type="text" id="input-folder-name" class="form-input" placeholder="e.g. Worm Gears" required />
-        </div>
-        <button type="submit" class="btn-action">Save Folder</button>
-      </form>
-    </div>
-  </div>
+        <label class="form-label">Folder Head Identifier</label>
+        <select id="job-head" class="form-select"></select>
 
-  <!-- Modal: Full Job Card & Process Chart Builder/Editor -->
-  <div class="modal-overlay" id="modal-job-editor">
-    <div class="modal-drawer">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-job-title-header">Job Card & Process Chart</div>
-        <button class="close-btn" onclick="closeModal('modal-job-editor')">&times;</button>
-      </div>
-      <form onsubmit="saveJobCard(event)">
-        <div class="form-group">
-          <label class="form-label">Job Title</label>
-          <input type="text" id="input-job-title" class="form-input" placeholder="e.g. Worm Shaft #409" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Destination Folder</label>
-          <select id="select-job-folder" class="form-select"></select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Process Chart Operations Sequence</label>
-          <div id="steps-builder-list"></div>
-          <button type="button" class="chip-btn" style="margin-top:6px;" onclick="addRichStepInput()">+ Add Operation Step</button>
-        </div>
-
-        <button type="submit" class="btn-action">Save to Google Sheets</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Individual Operation Step Edit Drawer -->
-  <div class="modal-overlay" id="modal-step-editor">
-    <div class="modal-drawer">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-step-title-header">Edit Operation Step</div>
-        <button class="close-btn" onclick="closeModal('modal-step-editor')">&times;</button>
-      </div>
-      <form onsubmit="saveIndividualStepEdit(event)">
-        <div class="form-group">
-          <label class="form-label">Step Title</label>
-          <input type="text" id="edit-step-title" class="form-input" required />
-        </div>
-
-        <div style="display:flex; gap:6px;">
-          <div style="flex:1;" class="form-group">
-            <label class="form-label">Assignee</label>
-            <select id="edit-step-assignee" class="form-select">
-              <option value="UNASSIGNED">UNASSIGNED</option>
-              <option value="JEEVAN">JEEVAN</option>
-              <option value="RAVI KUMAR">RAVI KUMAR</option>
-              <option value="SANANTH">SANANTH</option>
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-          <div style="flex:1;" class="form-group">
-            <label class="form-label">Status</label>
-            <select id="edit-step-status" class="form-select">
-              <option value="Not Started">Not Started</option>
-              <option value="In Progress">In Progress</option>
-              <option value="In Hold">In Hold</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:6px;">
-          <div style="flex:1;" class="form-group">
-            <label class="form-label">Deadline Date</label>
-            <input type="date" id="edit-step-date" class="form-input" />
-          </div>
-          <div style="flex:1;" class="form-group">
-            <label class="form-label">Time</label>
-            <input type="time" id="edit-step-time" class="form-input" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Manufacturing Specs / Notes</label>
-          <textarea id="edit-step-notes" class="form-textarea" rows="2"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Attach File from Device (PDF, Image, Drawing)</label>
-          <input type="file" id="edit-step-file-input" class="form-input" style="background:#ffffff !important; color:#000000 !important;" />
-          <div id="edit-step-current-attachment" style="font-size:10px; color:var(--accent-blue); margin-top:3px;"></div>
-        </div>
-
-        <button type="submit" class="btn-action">Update Operation Step</button>
+        <label class="form-label">Operations</label>
+        <div id="job-steps"></div>
+        <button type="button" class="chip-btn" style="margin-bottom:14px;" onclick="addStep()">+ Add Operation Step</button>
+        
+        <button type="submit" class="btn-action">Save to Matrix</button>
       </form>
     </div>
   </div>
 
   <script>
-    const WORKER_API_URL = "https://project1-brain.aeijeevan.workers.dev";
+    const API_URL = "https://project1-brain.aeijeevan.workers.dev";
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      if (tg.setHeaderColor) tg.setHeaderColor('#131314');
-      if (tg.setBackgroundColor) tg.setBackgroundColor('#131314');
-      if (tg.requestFullscreen) tg.requestFullscreen();
-    }
+    if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#131314'); tg.setBackgroundColor('#131314'); }
+    
+    let state = {
+      tab: 'tree', sub: 'today', assignee: 'ALL', search: '', currentFolder: 'root',
+      folders: [{id:'root', name:'Root', parentId:null}], jobs: [],
+      categories: [{id:'c1', name:'🚨 Overdue'}, {id:'c2', name:'⭐ Urgent'}],
+      editingJob: null, builderSteps: []
+    };
 
-    const userBadge = document.getElementById('user-pill');
-    if (tg?.initDataUnsafe?.user) {
-      userBadge.innerText = `👤 ${tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username}`;
-    }
-
-    let currentPrimaryTab = 'tree';
-    let currentSubTab = 'today';
-    let currentAssigneeFilter = 'ALL';
-    let subNavExpanded = true;
-    let currentFolderId = 'root';
-
-    let searchQuery = '';
-    let activeContextItem = null;
-    let editingJobId = null;
-    let editingFolderId = null;
-    let editingStepId = null;
-    let activeTargetCategoryId = null;
-    let selectedCategoryDrillDownId = null;
-
-    let folders = [{ id: 'root', name: 'Root', parentId: null }];
-    let jobCards = [];
-    let builderSteps = [];
-
-    let customOthersCategories = [
-      { id: 'cat-overdue', emoji: '🚨', title: 'Overdue Operations' },
-      { id: 'cat-urgent', emoji: '⭐', title: 'Urgent Priority' },
-      { id: 'cat-raw', emoji: '🚚', title: 'Raw Material Pending' }
-    ];
-
-    /* Loader & Audio Engines */
     function showLoader() { document.getElementById('global-loader').classList.add('active'); }
     function hideLoader() { document.getElementById('global-loader').classList.remove('active'); }
+    function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); }
 
-    function playAudioChime(type = 'success') {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+    document.addEventListener('DOMContentLoaded', fetchLive);
 
-        if (type === 'success') {
-          osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
-        } else if (type === 'delete') {
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(300, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
-        }
-      } catch(e) {}
-    }
-
-    function showToast(message, type = 'success') {
-      playAudioChime(type);
-      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred(type === 'delete' ? 'warning' : 'success');
-      const toast = document.getElementById('toast-banner');
-      toast.innerText = message;
-      toast.classList.add('active');
-      setTimeout(() => toast.classList.remove('active'), 3000);
-    }
-
-    /* Native Navigation Engine */
-    function updateNativeBackButton() {
-      if (!tg || !tg.BackButton) return;
-      if (document.querySelector('.modal-overlay.active') || (currentPrimaryTab === 'tree' && currentFolderId !== 'root') || (currentPrimaryTab === 'others' && selectedCategoryDrillDownId !== null)) {
-        tg.BackButton.show();
-      } else { tg.BackButton.hide(); }
-    }
-
-    function handleBackNavigation() {
-      const activeModal = document.querySelector('.modal-overlay.active');
-      if (activeModal) { activeModal.classList.remove('active'); updateNativeBackButton(); return; }
-      if (currentPrimaryTab === 'tree' && currentFolderId !== 'root') {
-        const parentId = folders.find(f => f.id === currentFolderId)?.parentId || 'root';
-        navToFolder(parentId); return;
-      }
-      if (currentPrimaryTab === 'others' && selectedCategoryDrillDownId !== null) { drillBackToOthersRoot(); return; }
-    }
-
-    if (tg && tg.BackButton) tg.BackButton.onClick(handleBackNavigation);
-    window.addEventListener('popstate', (e) => { e.preventDefault(); handleBackNavigation(); });
-    function pushHistoryState() { history.pushState({ page: 'matrix' }, '', location.href); }
-
-    document.addEventListener('DOMContentLoaded', () => { pushHistoryState(); fetchLiveData(); });
-
-    async function fetchLiveData() {
-      const initData = tg?.initData || '';
-      const userId = tg?.initDataUnsafe?.user?.id || '8822239844';
-      try {
-        // Cache buster guarantees live sync
-        const res = await fetch(`${WORKER_API_URL}/api/data?t=${Date.now()}`, {
-          headers: { 'X-Telegram-Init-Data': initData, 'X-Telegram-User-Id': String(userId) }
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-
-        if (data.folders) folders = data.folders.length ? data.folders : [{ id: 'root', name: 'Root', parentId: null }];
-        if (data.jobCards) jobCards = data.jobCards;
-        populateFolderScopeOptions();
-        renderAll();
-      } catch (err) { alert(`Sync Error:\n${err.message}`); renderAll(); }
-    }
-
-    function populateFolderScopeOptions() {
-      const select = document.getElementById('filter-folder-scope');
-      select.innerHTML = '<option value="ALL">Entire System (Root & All Subfolders)</option>';
-      folders.forEach(f => select.innerHTML += `<option value="${f.id}">${f.name}</option>`);
-    }
-
-    function renderAll() {
-      renderTreeFolderContent(); renderScheduleContent(); renderOthersContent();
-      updateSubNavVisibility(); updateNativeBackButton();
-    }
-
-    function switchPrimaryTab(tab) {
-      currentPrimaryTab = tab;
-      document.querySelectorAll('.primary-tab').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-page').forEach(page => page.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(`page-${tab}`).classList.add('active');
-      updateSubNavVisibility(); updateNativeBackButton();
-    }
-
-    function toggleHeaderCompactMode() {
-      subNavExpanded = !subNavExpanded;
-      document.getElementById('top-header').classList.toggle('compact-hidden', !subNavExpanded);
-      document.getElementById('top-search-bar').classList.toggle('compact-hidden', !subNavExpanded);
-      document.getElementById('sub-nav-container').classList.toggle('collapsed', !subNavExpanded);
-      document.getElementById('subnav-toggle-icon').innerText = subNavExpanded ? '▲' : '▼';
-    }
-
-    function updateSubNavVisibility() { document.getElementById('sub-row-tabs').style.display = currentPrimaryTab === 'schedule' ? 'flex' : 'none'; }
-    function setSubTab(sub) { currentSubTab = sub; document.querySelectorAll('#sub-row-tabs .chip-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); renderScheduleContent(); }
-    function setAssigneeFilter(assignee) { currentAssigneeFilter = assignee; document.querySelectorAll('#sub-row-filters .chip-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); renderAll(); }
-    function handleUniversalSearch() { searchQuery = document.getElementById('global-search-input').value.toLowerCase().trim(); renderAll(); }
-    function openFilterSortModal() { document.getElementById('modal-filter-sort').classList.add('active'); updateNativeBackButton(); }
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-      });
-    }
-
-    async function uploadSelectedFileToDrive(file, folderPathArray) {
-      const base64Data = await fileToBase64(file);
-      const res = await fetch(`${WORKER_API_URL}/api/upload-drive-file`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-        body: JSON.stringify({ fileName: file.name, mimeType: file.type, base64Data, folderPath: folderPathArray })
-      });
-      if (!res.ok) throw new Error(await res.text());
-      return (await res.json()).fileUrl;
-    }
-
-    function attachLongPressListener(element, type, id, title) {
-      let timer = null;
-      element.addEventListener('touchstart', () => { timer = setTimeout(() => openContextMenu(type, id, title), 600); });
-      element.addEventListener('touchend', () => clearTimeout(timer));
-      element.addEventListener('touchmove', () => clearTimeout(timer));
-      element.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(type, id, title); });
-    }
-
-    function openContextMenu(type, id, title) {
-      activeContextItem = { type, id, title };
-      document.getElementById('context-item-title').innerText = `${type.toUpperCase()}: ${title}`;
-      document.getElementById('modal-context-menu').classList.add('active');
-      updateNativeBackButton();
-    }
-
-    async function handleContextAction(action) {
-      if (!activeContextItem) return;
-      closeModal('modal-context-menu');
-
-      if (action === 'delete') {
-        if (confirm(`Delete ${activeContextItem.type} "${activeContextItem.title}"?`)) {
-          showLoader();
-          await executeDelete([activeContextItem.id], activeContextItem.type);
-          hideLoader();
-        }
-      } else if (action === 'edit') {
-        if (activeContextItem.type === 'job') openFullEditJobCardModal(activeContextItem.id);
-        else if (activeContextItem.type === 'folder') openFullEditFolderModal(activeContextItem.id);
-        else if (activeContextItem.type === 'step') openFullEditStepModal(activeContextItem.id);
-      } else if (action === 'location') {
-        openItemFolderLocation();
-      } else if (action === 'copy') {
-        showLoader();
-        await duplicateJobCard(activeContextItem.id);
-        hideLoader();
-      }
-    }
-
-    function openItemFolderLocation() {
-      if (!activeContextItem) return;
-      let folderIdToNav = 'root';
-      if (activeContextItem.type === 'folder') folderIdToNav = folders.find(f => f.id === activeContextItem.id)?.parentId || 'root';
-      else if (activeContextItem.type === 'job') folderIdToNav = jobCards.find(j => j.id === activeContextItem.id)?.folderId || 'root';
-      else if (activeContextItem.type === 'step') {
-        let parentJob = null; jobCards.forEach(j => j.steps.forEach(s => { if (s.id === activeContextItem.id) parentJob = j; }));
-        folderIdToNav = parentJob?.folderId || 'root';
-      }
-      navToFolder(folderIdToNav);
-      switchPrimaryTab('tree');
-      showToast("📁 Switched to Folder Location", "success");
-    }
-
-    function openFullEditFolderModal(folderId) {
-      const folder = folders.find(f => f.id === folderId);
-      if (!folder) return;
-      editingFolderId = folderId;
-      document.getElementById('modal-folder-title-header').innerText = `Edit Folder: ${folder.name}`;
-      document.getElementById('input-folder-name').value = folder.name;
-      document.getElementById('modal-folder').classList.add('active');
-      updateNativeBackButton();
-    }
-
-    function openFullEditJobCardModal(jobId) {
-      const job = jobCards.find(j => j.id === jobId);
-      if (!job) return;
-      editingJobId = jobId;
-      document.getElementById('modal-job-title-header').innerText = `Edit Job Card: ${job.title}`;
-      document.getElementById('input-job-title').value = job.title;
-      const select = document.getElementById('select-job-folder');
-      select.innerHTML = ''; folders.forEach(f => select.innerHTML += `<option value="${f.id}" ${f.id === job.folderId ? 'selected' : ''}>${f.name}</option>`);
-      builderSteps = JSON.parse(JSON.stringify(job.steps));
-      renderStepsBuilder();
-      document.getElementById('modal-job-editor').classList.add('active');
-      updateNativeBackButton();
-    }
-
-    function openFullEditStepModal(stepId) {
-      let targetStep = null; jobCards.forEach(j => j.steps.forEach(s => { if (s.id === stepId) targetStep = s; }));
-      if (!targetStep) return;
-      editingStepId = stepId;
-      document.getElementById('modal-step-title-header').innerText = `Edit Step: ${targetStep.title}`;
-      document.getElementById('edit-step-title').value = targetStep.title;
-      document.getElementById('edit-step-assignee').value = targetStep.assignee || 'UNASSIGNED';
-      document.getElementById('edit-step-status').value = targetStep.status || 'Not Started';
-      document.getElementById('edit-step-date').value = targetStep.date || '';
-      document.getElementById('edit-step-time').value = targetStep.time || '';
-      document.getElementById('edit-step-notes').value = targetStep.notes || '';
-      const attContainer = document.getElementById('edit-step-current-attachment');
-      if (targetStep.attachmentUrl) attContainer.innerHTML = `<a href="${targetStep.attachmentUrl}" target="_blank" style="color:var(--accent-blue);">Current File Link: ${targetStep.attachmentUrl}</a>`;
-      else attContainer.innerHTML = '';
-      document.getElementById('modal-step-editor').classList.add('active');
-      updateNativeBackButton();
-    }
-
-    async function saveIndividualStepEdit(e) {
-      e.preventDefault();
-      if (!editingStepId) return;
+    async function fetchLive() {
       showLoader();
-      
-      const title = document.getElementById('edit-step-title').value;
-      const assignee = document.getElementById('edit-step-assignee').value;
-      const status = document.getElementById('edit-step-status').value;
-      const date = document.getElementById('edit-step-date').value;
-      const time = document.getElementById('edit-step-time').value;
-      const notes = document.getElementById('edit-step-notes').value;
-      let attachmentUrl = '';
-      const fileInput = document.getElementById('edit-step-file-input');
-      
-      if (fileInput.files && fileInput.files.length > 0) {
-        let parentJob = null; jobCards.forEach(j => j.steps.forEach(s => { if (s.id === editingStepId) parentJob = j; }));
-        let pathNames = ['DOCUMENTS AND ATTACHMENTS'];
-        if (parentJob) { getFolderPath(parentJob.folderId).forEach(f => pathNames.push(f.name)); pathNames.push(parentJob.title); }
-        try { attachmentUrl = await uploadSelectedFileToDrive(fileInput.files[0], pathNames); } 
-        catch (uploadErr) { alert(`File Upload Failed:\n${uploadErr.message}`); hideLoader(); return; }
-      }
-
       try {
-        const res = await fetch(`${WORKER_API_URL}/api/steps`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-          body: JSON.stringify({ stepId: editingStepId, title, assignee, status, date, time, notes, attachmentUrl })
-        });
-        if (res.ok) { closeModal('modal-step-editor'); editingStepId = null; showToast("✏️ Operation Step Updated", "success"); await fetchLiveData(); } 
-        else { alert(`Step Edit Error (${res.status}):\n${await res.text()}`); }
-      } catch (err) { alert(`Network Error: ${err.message}`); }
+        const res = await fetch(`${API_URL}/api/data?t=${Date.now()}`, { headers: { 'X-Telegram-User-Id': tg?.initDataUnsafe?.user?.id || '8822239844' } });
+        const data = await res.json();
+        if (data.folders) state.folders = data.folders;
+        if (data.jobCards) state.jobs = data.jobCards;
+        renderAll();
+      } catch (e) { alert("Sync Error: " + e.message); }
       finally { hideLoader(); }
     }
 
-    async function duplicateJobCard(jobId) {
-      const job = jobCards.find(j => j.id === jobId);
-      if (!job) return;
-      try {
-        const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-          body: JSON.stringify({ title: `Copy of ${job.title}`, folderId: job.folderId, steps: job.steps.map(s => ({ ...s, id: '' })) })
-        });
-        if (res.ok) { showToast("📋 Job Card Duplicated", "success"); await fetchLiveData(); }
-      } catch (e) { alert("Duplicate network error"); }
+    function switchTab(t) {
+      state.tab = t;
+      document.querySelectorAll('.primary-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`page-${t}`).classList.add('active');
+      document.getElementById('schedule-sub-nav').style.display = t === 'schedule' ? 'flex' : 'none';
+      renderAll();
     }
 
-    async function executeDelete(ids, type) {
-      try {
-        const res = await fetch(`${WORKER_API_URL}/api/delete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-          body: JSON.stringify({ type, ids })
-        });
-        if (res.ok) { showToast(`🗑️ ${type.toUpperCase()} Deleted`, "delete"); await fetchLiveData(); } 
-        else { alert(`Delete Error (${res.status}): ${await res.text()}`); }
-      } catch (e) { alert("Delete network exception"); }
+    function setAssignee(a) { state.assignee = a; document.querySelectorAll('.sub-row .chip-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); renderAll(); }
+    function setSubTab(s) { state.sub = s; document.querySelectorAll('#schedule-sub-nav .chip-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); renderAll(); }
+
+    function getPath(fId) {
+      let p = []; let c = state.folders.find(f => f.id === fId);
+      while(c) { p.unshift(c); c = state.folders.find(f => f.id === c.parentId); }
+      return p;
     }
 
-    function getFilteredAndSortedJobs(inputJobs) {
-      const sortOrder = document.getElementById('filter-sort-order')?.value || 'TITLE_ASC';
-      const folderScope = document.getElementById('filter-folder-scope')?.value || 'ALL';
-      const dateFrom = document.getElementById('filter-date-from')?.value || '';
-      const dateTo = document.getElementById('filter-date-to')?.value || '';
-
-      let list = [...inputJobs];
-      if (folderScope !== 'ALL') list = list.filter(j => j.folderId === folderScope);
-      if (dateFrom || dateTo) list = list.filter(j => j.steps.some(s => {
-          if (!s.date) return false;
-          if (dateFrom && s.date < dateFrom) return false;
-          if (dateTo && s.date > dateTo) return false;
-          return true;
-      }));
-
-      list.sort((a, b) => {
-        if (sortOrder === 'TITLE_ASC') return a.title.localeCompare(b.title);
-        if (sortOrder === 'TITLE_DESC') return b.title.localeCompare(a.title);
-        return 0;
-      });
-      return list;
+    function toggleExpand(id) {
+      const el = document.getElementById(`steps-${id}`);
+      const arrow = document.getElementById(`arrow-${id}`);
+      if(el.classList.contains('collapsed')) { el.classList.remove('collapsed'); arrow.innerText = 'v'; }
+      else { el.classList.add('collapsed'); arrow.innerText = '^'; }
     }
 
-    function renderTreeFolderContent() {
-      const container = document.getElementById('tree-items-container');
-      const navControls = document.getElementById('tree-nav-controls');
-      container.innerHTML = ''; navControls.innerHTML = '';
-
-      const currentFolder = folders.find(f => f.id === currentFolderId);
-      if (currentFolder && currentFolder.parentId) {
-        navControls.innerHTML = `<button class="btn-back" onclick="navToFolder('${folders.find(f => f.id === currentFolder.parentId)?.id || 'root'}')">⬅️ Back</button>`;
-      }
-
-      const breadcrumbs = document.getElementById('tree-breadcrumbs');
-      breadcrumbs.innerHTML = `<span class="breadcrumb-item" onclick="navToFolder('root')">📁 Root</span>`;
-      getFolderPath(currentFolderId).forEach(f => { if (f.id !== 'root') breadcrumbs.innerHTML += ` ➔ <span class="breadcrumb-item" onclick="navToFolder('${f.id}')">${f.name}</span>`; });
-
-      let subFolders = folders.filter(f => f.parentId === currentFolderId);
-      let currentJobs = jobCards.filter(j => j.folderId === currentFolderId);
-
-      if (searchQuery) {
-        container.innerHTML += `<div style="font-size:11px; color:var(--accent-teal); margin-bottom:8px;">🔍 Deep Search matching: "${searchQuery}"</div>`;
-        subFolders = folders.filter(f => f.name.toLowerCase().includes(searchQuery));
-        currentJobs = jobCards.filter(job => job.title.toLowerCase().includes(searchQuery) || job.steps.some(s => s.title.toLowerCase().includes(searchQuery) || s.notes.toLowerCase().includes(searchQuery) || s.assignee.toLowerCase().includes(searchQuery)));
-        if (!subFolders.length && !currentJobs.length) { container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--accent-red); font-weight:600;">⚠️ No search results</div>`; return; }
-      }
-
-      currentJobs = getFilteredAndSortedJobs(currentJobs);
-
-      subFolders.forEach(folder => {
-        const item = document.createElement('div'); item.className = 'folder-item';
-        item.innerHTML = `<div class="folder-header"><div class="folder-title-group" onclick="navToFolder('${folder.id}')" style="cursor:pointer; flex:1;"><span>📁</span><span class="item-title">${folder.name}</span></div><span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openContextMenu('folder', '${folder.id}', '${folder.name}')">✏️</span></div>`;
-        attachLongPressListener(item, 'folder', folder.id, folder.name); container.appendChild(item);
-      });
-
-      currentJobs.forEach(job => container.appendChild(createJobCardElement(job)));
-      if (!subFolders.length && !currentJobs.length) container.innerHTML += `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">[ Folder Empty ]</div>`;
+    function renderAll() {
+      state.search = document.getElementById('global-search-input').value.toLowerCase();
+      renderTree(); renderSchedule(); renderOthers();
     }
 
-    function navToFolder(id) { currentFolderId = id; pushHistoryState(); renderTreeFolderContent(); updateNativeBackButton(); }
-
-    function getFolderPath(folderId) {
-      let path = [], current = folders.find(f => f.id === folderId);
-      while (current) { path.unshift(current); current = folders.find(f => f.id === current.parentId); }
-      return path;
+    function buildStepHTML(step, job) {
+      if (state.assignee !== 'ALL' && step.assignee !== state.assignee) return '';
+      const sc = `status-${step.status.toLowerCase().replace(/\s/g,'')}`;
+      return `
+        <div class="step-card">
+          <div class="step-header">
+            <span class="step-title">${step.title}</span>
+            <div style="display:flex; gap:6px;">
+              <span class="badge-status ${sc}" onclick="cycleStatus('${step.id}')">${step.status}</span>
+              <span style="font-size:12px; cursor:pointer;" onclick="openJobModal('${job.id}')">✏️</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; font-size:10px; color:var(--text-muted); margin-top:4px;">
+            <span style="color:var(--accent-teal);">👤 ${step.assignee}</span>
+            ${step.date ? `<span>📅 ${step.date}</span>` : ''}
+            ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" style="color:var(--accent-blue);">📎 Doc</a>` : ''}
+          </div>
+        </div>`;
     }
 
-    function createJobCardElement(job) {
-      const card = document.createElement('div'); card.className = 'job-card-item';
-      const completed = job.steps.filter(s => s.status === 'Completed').length;
-      const total = job.steps.length;
-      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-      card.innerHTML = `<div class="job-header"><div class="job-title-group"><span>⚙️</span><span class="item-title">${job.title}</span></div><span style="font-size:11px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditJobCardModal('${job.id}')">✏️ Edit</span></div>
-        <div class="progress-container"><div class="progress-info"><span>Progress</span><span>${pct}% (${completed}/${total})</span></div><div class="progress-track"><div class="progress-fill" style="width: ${pct}%;"></div></div></div>
-        <div class="step-list">${job.steps.map(s => createStepHTML(s)).join('')}</div>`;
-      attachLongPressListener(card, 'job', job.id, job.title); return card;
-    }
-
-    function createStepHTML(step) {
-      if (currentAssigneeFilter !== 'ALL' && step.assignee !== currentAssigneeFilter) return '';
-      const statusClass = `status-${step.status.toLowerCase().replace(/\s+/g, '')}`;
-      return `<div class="step-card"><div class="step-header"><span class="step-title">${step.title}</span><div style="display:flex; gap:6px; align-items:center;"><span class="badge-status ${statusClass}" onclick="cycleStepStatusForward('${step.id}')">${step.status}</span><span style="font-size:10px; color:var(--text-muted); cursor:pointer;" onclick="openFullEditStepModal('${step.id}')">✏️</span></div></div>
-        <div class="step-meta"><span class="meta-pill meta-assignee">👤 ${step.assignee || 'UNASSIGNED'}</span>${step.date ? `<span class="meta-pill">📅 ${step.date} ${step.time || ''}</span>` : ''}
-        ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" class="meta-pill" style="color:var(--accent-blue); text-decoration:none;">📎 PDF/Image Document</a>` : ''}
-        ${step.notes ? `<div style="width:100%; font-size:10px; color:var(--text-muted); margin-top:3px;">📝 ${step.notes}</div>` : ''}</div></div>`;
-    }
-
-    async function cycleStepStatusForward(stepId) {
+    async function cycleStatus(stepId) {
       showLoader();
-      const forwardSequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
-      let targetStep = null;
-
-      jobCards.forEach(j => j.steps.forEach(s => {
-        if (s.id === stepId) {
-          s.status = forwardSequence[(forwardSequence.indexOf(s.status) + 1) % forwardSequence.length];
-          targetStep = s;
-        }
-      }));
-
-      if (targetStep) {
-        try {
-          const res = await fetch(`${WORKER_API_URL}/api/steps`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-            body: JSON.stringify({ stepId: targetStep.id, status: targetStep.status, title: targetStep.title })
-          });
-          if (res.ok) { showToast(`Status ➔ ${targetStep.status}`, "success"); await fetchLiveData(); }
-        } catch (e) { console.error(e); }
+      const seq = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
+      let target = null;
+      state.jobs.forEach(j => j.steps.forEach(s => { if(s.id === stepId) { s.status = seq[(seq.indexOf(s.status)+1)%seq.length]; target = s; }}));
+      if (target) {
+        await fetch(`${API_URL}/api/steps`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({stepId:target.id, status:target.status}) });
+        renderAll();
       }
       hideLoader();
     }
 
-    function renderScheduleContent() {
-      const container = document.getElementById('schedule-items-container'); container.innerHTML = '';
-      let allSteps = []; jobCards.forEach(j => j.steps.forEach(s => allSteps.push({ ...s, jobTitle: j.title, folderId: j.folderId })));
-      if (currentAssigneeFilter !== 'ALL') allSteps = allSteps.filter(s => s.assignee === currentAssigneeFilter);
-      if (searchQuery) allSteps = allSteps.filter(s => s.title.toLowerCase().includes(searchQuery) || s.notes.toLowerCase().includes(searchQuery) || s.jobTitle.toLowerCase().includes(searchQuery));
-      if (!allSteps.length) { container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">[ No operations scheduled ]</div>`; return; }
-      allSteps.forEach(s => {
-        const card = document.createElement('div'); card.className = 'job-card-item';
-        card.innerHTML = `<div style="font-size:10px; color:var(--accent-purple); margin-bottom:3px;">${s.jobTitle}</div>${createStepHTML(s)}`;
-        attachLongPressListener(card, 'step', s.id, s.title); container.appendChild(card);
+    async function archiveJob(jobId) {
+      if(!confirm("Archive this fully completed job?")) return;
+      showLoader();
+      await fetch(`${API_URL}/api/archive`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jobId}) });
+      await fetchLive();
+    }
+
+    function renderTree() {
+      const c = document.getElementById('tree-container'); c.innerHTML = '';
+      const n = document.getElementById('tree-nav');
+      const curF = state.folders.find(f => f.id === state.currentFolder);
+      if (curF && curF.parentId) n.innerHTML = `<button class="btn-back" onclick="state.currentFolder='${curF.parentId}'; renderAll();">⬅️ Back</button>`;
+      else n.innerHTML = `<span style="font-size:12px; color:var(--text-muted);">📁 Root</span>`;
+
+      let sF = state.folders.filter(f => f.parentId === state.currentFolder);
+      let sJ = state.jobs.filter(j => j.folderId === state.currentFolder && !j.isArchived);
+
+      if (state.search) {
+        sF = state.folders.filter(f => f.name.toLowerCase().includes(state.search));
+        sJ = state.jobs.filter(j => !j.isArchived && (j.title.toLowerCase().includes(state.search) || j.steps.some(s=>s.title.toLowerCase().includes(state.search))));
+      }
+
+      sF.forEach(f => {
+        c.innerHTML += `<div class="folder-item" onclick="state.currentFolder='${f.id}'; renderAll();"><div class="job-header"><span>📁 <span class="item-title">${f.name}</span></span><span onclick="event.stopPropagation(); deleteItem('folder','${f.id}')">🗑️</span></div></div>`;
+      });
+
+      sJ.forEach(j => {
+        // Sort steps: Completed at bottom
+        let sortedSteps = [...j.steps].sort((a,b) => (a.status==='Completed') - (b.status==='Completed'));
+        let allDone = sortedSteps.length > 0 && sortedSteps.every(s => s.status === 'Completed');
+
+        c.innerHTML += `
+          <div class="job-card-item">
+            <div class="job-header" onclick="toggleExpand('${j.id}')">
+              <div class="job-title-group">
+                <span class="item-title">⚙️ ${j.title}</span>
+                ${j.folderHeadId ? `<span class="folder-head-badge">HEAD: ${state.folders.find(f=>f.id===j.folderHeadId)?.name || ''}</span>` : ''}
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span onclick="event.stopPropagation(); openJobModal('${j.id}')">✏️</span>
+                <span onclick="event.stopPropagation(); deleteItem('job','${j.id}')">🗑️</span>
+                <span id="arrow-${j.id}" style="color:var(--accent-blue);">^</span>
+              </div>
+            </div>
+            ${allDone ? `<button class="btn-action" style="background:var(--accent-green); padding:6px; margin-top:8px;" onclick="archiveJob('${j.id}')">📦 All Completed - Archive Job</button>` : ''}
+            <div class="step-list" id="steps-${j.id}">${sortedSteps.map(s => buildStepHTML(s, j)).join('')}</div>
+          </div>`;
       });
     }
 
-    function renderOthersContent() {
-      const container = document.getElementById('others-items-container'); const controls = document.getElementById('others-category-controls');
-      container.innerHTML = ''; controls.innerHTML = '';
+    function renderSchedule() {
+      const c = document.getElementById('schedule-container'); c.innerHTML = '';
+      const cc = document.getElementById('schedule-completed-container'); cc.innerHTML = '';
+      
+      state.jobs.filter(j=>!j.isArchived).forEach(j => {
+        j.steps.forEach(s => {
+          if (state.assignee !== 'ALL' && s.assignee !== state.assignee) return;
+          if (state.search && !s.title.toLowerCase().includes(state.search) && !j.title.toLowerCase().includes(state.search)) return;
 
-      if (selectedCategoryDrillDownId) {
-        const currentCat = customOthersCategories.find(c => c.id === selectedCategoryDrillDownId);
-        controls.innerHTML = `<button class="btn-back" onclick="drillBackToOthersRoot()">⬅️ Back to OTHERS Categories</button>
-          <div style="display:flex; gap:6px; margin-bottom:12px;"><button class="chip-btn" onclick="openCategoryPicker('${currentCat.id}', '${currentCat.title}')">+ Add Job/Step</button></div>`;
-        let matchingSteps = []; jobCards.forEach(j => j.steps.forEach(s => { if (s.category === selectedCategoryDrillDownId) matchingSteps.push({ ...s, jobTitle: j.title }); }));
-        if (!matchingSteps.length) { container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted);">[ No operations assigned ]</div>`; return; }
-        matchingSteps.forEach(s => {
-          const card = document.createElement('div'); card.className = 'job-card-item';
-          card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span style="font-size:10px; color:var(--accent-purple);">${s.jobTitle}</span><button class="chip-btn" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="removeStepFromCategory('${s.id}')">➖ Remove</button></div>${createStepHTML(s)}`;
-          attachLongPressListener(card, 'step', s.id, s.title); container.appendChild(card);
+          const headName = j.folderHeadId ? state.folders.find(f=>f.id===j.folderHeadId)?.name : '';
+          const html = `
+            <div class="job-card-item">
+              <div style="font-size:10px; color:var(--accent-purple); margin-bottom:4px; display:flex; justify-content:space-between;">
+                <span>JOB: ${j.title}</span>
+                ${headName ? `<span style="color:var(--accent-teal);">HEAD: ${headName}</span>` : ''}
+              </div>
+              ${buildStepHTML(s, j)}
+            </div>`;
+          
+          if (s.status === 'Completed') cc.innerHTML += html;
+          else c.innerHTML += html;
         });
-      } else {
-        controls.innerHTML = `<button class="chip-btn" style="margin-bottom:12px;" onclick="openAddCustomRuleModal()">+ Add Custom Category Rule</button>`;
-        container.innerHTML = customOthersCategories.map(cat => {
-          let count = 0; jobCards.forEach(j => j.steps.forEach(s => { if (s.category === cat.id) count++; }));
-          return `<div class="folder-item" onclick="drillIntoCategory('${cat.id}')"><div class="folder-header"><div class="folder-title-group"><span>${cat.emoji}</span><span class="item-title">${cat.title}</span></div><span style="font-size:11px; color:var(--accent-teal);">${count} Items ➔</span></div></div>`;
-        }).join('');
-      }
+      });
     }
 
-    function drillIntoCategory(catId) { selectedCategoryDrillDownId = catId; pushHistoryState(); renderOthersContent(); updateNativeBackButton(); }
-    function drillBackToOthersRoot() { selectedCategoryDrillDownId = null; renderOthersContent(); updateNativeBackButton(); }
+    function renderOthers() {
+      const c = document.getElementById('others-container'); c.innerHTML = '';
+      state.categories.forEach(cat => {
+        let items = state.folders.filter(f => f.category === cat.id).map(f => `<div class="folder-item">📁 ${f.name}</div>`);
+        state.jobs.forEach(j => j.steps.filter(s=>s.category===cat.id).forEach(s => items.push(buildStepHTML(s, j))));
+        
+        c.innerHTML += `
+          <div class="job-card-item">
+            <div class="job-header" onclick="toggleExpand('cat-${cat.id}')">
+              <span class="item-title">${cat.name}</span>
+              <span id="arrow-cat-${cat.id}">v</span>
+            </div>
+            <div class="step-list collapsed" id="steps-cat-${cat.id}">${items.join('')}</div>
+            <button class="chip-btn" style="margin-top:10px;" onclick="linkToCategory('${cat.id}')">+ Add Job/Folder</button>
+          </div>`;
+      });
+    }
 
-    async function removeStepFromCategory(stepId) {
+    async function deleteItem(type, id) {
+      if(!confirm("Permanently delete?")) return;
       showLoader();
-      let targetStep = null; jobCards.forEach(j => j.steps.forEach(s => { if (s.id === stepId) { s.category = ''; targetStep = s; } }));
-      if (targetStep) {
-        try {
-          await fetch(`${WORKER_API_URL}/api/steps`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-            body: JSON.stringify({ stepId: targetStep.id, category: '' })
-          });
-          showToast("➖ Operation Removed", "delete"); await fetchLiveData();
-        } catch (e) {}
-      }
-      hideLoader();
+      await fetch(`${API_URL}/api/delete`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type, ids:[id]}) });
+      await fetchLive();
     }
 
-    function openAddFolderModal() {
-      editingFolderId = null; document.getElementById('modal-folder-title-header').innerText = 'New Folder'; document.getElementById('input-folder-name').value = '';
-      document.getElementById('modal-folder').classList.add('active'); updateNativeBackButton();
+    function openFolderModal() {
+      const name = prompt("Folder Name:");
+      if(name) { showLoader(); fetch(`${API_URL}/api/folders`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, parentId: state.currentFolder}) }).then(fetchLive); }
     }
 
-    async function saveFolder(e) {
+    function openJobModal(jobId = null) {
+      state.editingJob = jobId ? state.jobs.find(j => j.id === jobId) : null;
+      document.getElementById('job-title').value = state.editingJob ? state.editingJob.title : '';
+      
+      // Build Folder Options
+      const fs = document.getElementById('job-folder'); fs.innerHTML = '';
+      state.folders.forEach(f => fs.innerHTML += `<option value="${f.id}" ${state.editingJob && state.editingJob.folderId===f.id ? 'selected':''}>${f.name}</option>`);
+      
+      // Build Head Options based on selected folder path
+      updateHeadOptions();
+      fs.onchange = updateHeadOptions;
+
+      state.builderSteps = state.editingJob ? JSON.parse(JSON.stringify(state.editingJob.steps)) : [];
+      if(!state.editingJob) addStep();
+      else renderBuilderSteps();
+
+      document.getElementById('modal-job').classList.add('active');
+    }
+
+    function updateHeadOptions() {
+      const hs = document.getElementById('job-head'); hs.innerHTML = '<option value="">None</option>';
+      const fId = document.getElementById('job-folder').value;
+      getPath(fId).forEach(f => hs.innerHTML += `<option value="${f.id}" ${state.editingJob && state.editingJob.folderHeadId===f.id ? 'selected':''}>${f.name}</option>`);
+    }
+
+    function addStep() { state.builderSteps.push({id:'', title:'', assignee:'UNASSIGNED', status:'Not Started', date:'', time:'', notes:''}); renderBuilderSteps(); }
+    function removeStep(i) { state.builderSteps.splice(i,1); renderBuilderSteps(); }
+
+    function renderBuilderSteps() {
+      document.getElementById('job-steps').innerHTML = state.builderSteps.map((s,i) => `
+        <div class="step-card" style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;">Op #${i+1}</span><span style="color:var(--accent-red);" onclick="removeStep(${i})">X</span></div>
+          <input type="text" class="form-input" placeholder="Title" value="${s.title}" oninput="state.builderSteps[${i}].title=this.value" required style="margin-top:6px;"/>
+          <div style="display:flex; gap:6px;">
+            <select class="form-select" onchange="state.builderSteps[${i}].assignee=this.value"><option value="UNASSIGNED" ${s.assignee==='UNASSIGNED'?'selected':''}>UNASSIGNED</option><option value="JEEVAN" ${s.assignee==='JEEVAN'?'selected':''}>JEEVAN</option><option value="RAVI KUMAR" ${s.assignee==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option><option value="SANANTH" ${s.assignee==='SANANTH'?'selected':''}>SANANTH</option><option value="ALL" ${s.assignee==='ALL'?'selected':''}>ALL</option></select>
+            <input type="date" class="form-input" value="${s.date}" onchange="state.builderSteps[${i}].date=this.value"/>
+          </div>
+          <textarea class="form-textarea" placeholder="Notes" oninput="state.builderSteps[${i}].notes=this.value" rows="1">${s.notes}</textarea>
+        </div>`).join('');
+    }
+
+    async function saveJob(e) {
       e.preventDefault(); showLoader();
       try {
-        const res = await fetch(`${WORKER_API_URL}/api/folders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-          body: JSON.stringify({ folderId: editingFolderId, name: document.getElementById('input-folder-name').value, parentId: currentFolderId })
+        await fetch(`${API_URL}/api/jobcards`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            jobId: state.editingJob ? state.editingJob.id : null,
+            title: document.getElementById('job-title').value,
+            folderId: document.getElementById('job-folder').value,
+            folderHeadId: document.getElementById('job-head').value,
+            steps: state.builderSteps
+          })
         });
-        if (res.ok) { closeModal('modal-folder'); showToast("📁 Folder Saved", "success"); await fetchLiveData(); } 
-        else { alert(`Error: ${await res.text()}`); }
-      } catch (err) { alert(`Error: ${err.message}`); } finally { hideLoader(); }
+        closeAllModals(); await fetchLive();
+      } catch(err) { alert(err.message); hideLoader(); }
     }
-
-    function openAddJobCardModal() {
-      editingJobId = null; document.getElementById('modal-job-title-header').innerText = 'New Job Card & Process Chart'; document.getElementById('input-job-title').value = '';
-      document.getElementById('select-job-folder').innerHTML = folders.map(f => `<option value="${f.id}" ${f.id === currentFolderId ? 'selected' : ''}>${f.name}</option>`).join('');
-      builderSteps = []; addRichStepInput(); document.getElementById('modal-job-editor').classList.add('active'); updateNativeBackButton();
-    }
-
-    function addRichStepInput() { builderSteps.push({ id: '', title: '', assignee: 'UNASSIGNED', status: 'Not Started', date: '', time: '', attachmentUrl: '', linkedJob: '', notes: '' }); renderStepsBuilder(); }
-    function removeBuilderStep(idx) { builderSteps.splice(idx, 1); renderStepsBuilder(); }
-
-    function renderStepsBuilder() {
-      document.getElementById('steps-builder-list').innerHTML = builderSteps.map((s, idx) => `
-        <div class="builder-step-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;"><strong style="font-size:11px; color:var(--accent-blue);">Operation Step #${idx + 1}</strong><button type="button" class="btn-delete" style="background:rgba(242,139,130,0.15); color:var(--accent-red); border:1px solid var(--accent-red); padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="removeBuilderStep(${idx})">Remove</button></div>
-          <input type="text" class="form-input" placeholder="Step Title (e.g. CNC Turning)" value="${s.title}" oninput="builderSteps[${idx}].title = this.value" required />
-          <div style="display:flex; gap:6px;">
-            <div style="flex:1;"><label class="form-label">Assignee</label><select class="form-select" onchange="builderSteps[${idx}].assignee = this.value"><option value="UNASSIGNED" ${s.assignee==='UNASSIGNED'?'selected':''}>UNASSIGNED</option><option value="JEEVAN" ${s.assignee==='JEEVAN'?'selected':''}>JEEVAN</option><option value="RAVI KUMAR" ${s.assignee==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option><option value="SANANTH" ${s.assignee==='SANANTH'?'selected':''}>SANANTH</option><option value="ALL" ${s.assignee==='ALL'?'selected':''}>ALL</option></select></div>
-            <div style="flex:1;"><label class="form-label">Initial Status</label><select class="form-select" onchange="builderSteps[${idx}].status = this.value"><option value="Not Started" ${s.status==='Not Started'?'selected':''}>Not Started</option><option value="In Progress" ${s.status==='In Progress'?'selected':''}>In Progress</option><option value="In Hold" ${s.status==='In Hold'?'selected':''}>In Hold</option><option value="Completed" ${s.status==='Completed'?'selected':''}>Completed</option></select></div>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <div style="flex:1;"><label class="form-label">Calendar / Deadline Date</label><input type="date" class="form-input" value="${s.date}" onchange="builderSteps[${idx}].date = this.value" /></div>
-            <div style="flex:1;"><label class="form-label">Time</label><input type="time" class="form-input" value="${s.time}" onchange="builderSteps[${idx}].time = this.value" /></div>
-          </div>
-          <input type="text" class="form-input" placeholder="Manufacturing Specs / Notes" value="${s.notes}" oninput="builderSteps[${idx}].notes = this.value" />
-          <div><label class="form-label">Attach File from Device (PDF, Image, Drawing)</label><input type="file" id="builder-step-file-${idx}" class="form-input" style="background:#ffffff !important; color:#000000 !important;" /></div>
-        </div>
-      `).join('');
-    }
-
-    async function saveJobCard(e) {
-      e.preventDefault(); showLoader();
-      try {
-        const title = document.getElementById('input-job-title').value;
-        const folderId = document.getElementById('select-job-folder').value;
-        let fPath = ['DOCUMENTS AND ATTACHMENTS']; getFolderPath(folderId).forEach(f => fPath.push(f.name)); fPath.push(title);
-
-        for (let i = 0; i < builderSteps.length; i++) {
-          const fileInput = document.getElementById(`builder-step-file-${i}`);
-          if (fileInput && fileInput.files && fileInput.files.length > 0) {
-            builderSteps[i].attachmentUrl = await uploadSelectedFileToDrive(fileInput.files[0], fPath);
-          }
-        }
-
-        const res = await fetch(`${WORKER_API_URL}/api/jobcards`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg?.initData || '', 'X-Telegram-User-Id': String(tg?.initDataUnsafe?.user?.id || '8822239844') },
-          body: JSON.stringify({ jobId: editingJobId, title, folderId, steps: builderSteps })
-        });
-
-        if (res.ok) { closeModal('modal-job-editor'); showToast("⚙️ Job Card Saved", "success"); await fetchLiveData(); } 
-        else { alert(`Error: ${await res.text()}`); }
-      } catch (err) { alert(`Error: ${err.message}`); } finally { hideLoader(); }
-    }
-
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); updateNativeBackButton(); }
   </script>
 </body>
 </html>
