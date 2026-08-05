@@ -3,644 +3,657 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TRACE Matrix Shop-Floor</title>
+  <title>TRACE Matrix</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* Gemini Inspired Dark Theme + Strict Rules */
+    /* TRACE V3 - Gemini Inspired Dark Mode */
     :root {
-      --bg-base: #131314;
-      --bg-card: #1e1f20;
-      --border: #282a2c;
-      --text: #e3e3e3;
-      --text-muted: #a1a1a1;
-      --accent: #a8c7fa;
-      --success: #6ccb5f;
-      --warning: #f28b82;
+      --bg-dark: #131314;
+      --card-bg: #1e1f20;
+      --border-subtle: #2d2e31;
+      --accent-blue: #a8c7fa;
+      --accent-green: #6dd58c;
+      --accent-red: #f28b82;
+      --text-primary: #e3e3e3;
+      --text-muted: #8e918f;
     }
     
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; user-select: none; }
     
     body {
-      background-color: var(--bg-base); color: var(--text);
-      /* Telegram Native Save Top Padding */
-      padding-top: calc(var(--tg-safe-area-inset-top, 20px) + 10px); 
-      padding-bottom: 70px; /* Space for tabs */
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      /* Requirement 8: Native Telegram Header Integration */
+      padding-top: calc(var(--tg-safe-area-inset-top, 15px) + 15px);
+      padding-bottom: 90px;
     }
 
-    /* CRITICAL UI RULE: Solid White Background + Bold Black Text for inputs */
+    /* Strict white inputs for readability */
     input, select, textarea {
       background-color: #ffffff !important;
       color: #000000 !important;
-      font-weight: bold !important;
-      border: 1px solid var(--border);
-      padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 15px;
-      appearance: none;
+      font-weight: 600 !important;
+      border: 1px solid var(--border-subtle);
+      padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 12px;
+      appearance: none; font-size: 13px;
     }
-    
-    /* Global Search & Assignee Filters */
-    .header-controls { padding: 0 15px 15px 15px; position: sticky; top: 0; background: var(--bg-base); z-index: 100; }
-    .filter-pills { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-    .pill { padding: 6px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; white-space: nowrap; transition: 0.2s;}
-    .pill.active { background: var(--accent); color: var(--bg-base); font-weight: bold; border-color: var(--accent); }
 
-    /* Core Layouts */
-    .view-section { display: none; padding: 0 15px; }
-    .view-section.active { display: block; }
+    /* Core Navigation & Controls */
+    .controls-wrapper { padding: 0 16px; margin-bottom: 15px; position: sticky; top: 0; background: var(--bg-dark); z-index: 100; }
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
+    .chip { padding: 6px 14px; background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 20px; font-size: 11px; white-space: nowrap; cursor: pointer; font-weight: 600; color: var(--text-muted); }
+    .chip.active { background: rgba(168, 199, 250, 0.15); color: var(--accent-blue); border-color: var(--accent-blue); }
     
-    /* Folders & Cards */
-    .folder-item, .job-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; position: relative; }
-    .folder-item { display: flex; align-items: center; gap: 12px; font-weight: 600; cursor: pointer; }
-    .job-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
-    .job-title { font-size: 16px; font-weight: 700; color: var(--accent); }
-    .folder-head-tag { font-size: 10px; background: rgba(168, 199, 250, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border);}
+    .tab-view { display: none; padding: 0 16px; }
+    .tab-view.active { display: block; }
+
+    /* Bottom Main Nav */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; border-top: 1px solid var(--border-subtle); padding-bottom: env(safe-area-inset-bottom); z-index: 1000;}
+    .nav-btn { flex: 1; text-align: center; padding: 15px 0; font-size: 12px; font-weight: bold; color: var(--text-muted); cursor: pointer;}
+    .nav-btn.active { color: var(--accent-blue); border-top: 2px solid var(--accent-blue); }
+
+    /* Items (Folders, Cards, Steps) */
+    .folder-item, .job-card { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+    .folder-item { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
     
-    /* Steps */
-    .steps-container { display: none; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+    .job-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer;}
+    .job-title { font-size: 15px; font-weight: bold; color: var(--text-primary); margin-bottom: 4px;}
+    .folder-head-badge { font-size: 10px; background: rgba(109, 213, 140, 0.15); color: var(--accent-green); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-green); display: inline-block; margin-bottom: 8px;}
+    
+    .steps-container { display: none; margin-top: 15px; border-top: 1px solid var(--border-subtle); padding-top: 12px; }
     .job-card.expanded .steps-container { display: block; }
-    .step-item { background: var(--bg-base); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--border); position: relative; }
-    .step-item.completed { border-left-color: var(--success); opacity: 0.6; }
-    .step-item.in-progress { border-left-color: var(--accent); }
-    .step-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; margin-top: 5px;}
+    .job-card.expanded .toggle-icon { transform: rotate(180deg); }
+    .toggle-icon { transition: transform 0.2s; font-size: 14px; padding: 4px;}
     
-    .btn { background: var(--accent); color: var(--bg-base); padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; cursor: pointer; width: 100%; border: none;}
-    .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); margin-top: 10px;}
+    .step-item { background: var(--bg-dark); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--border-subtle); }
+    .step-item.completed { border-left-color: var(--accent-green); opacity: 0.6; }
+    .step-item.in-progress { border-left-color: var(--accent-blue); }
+    .step-meta { display: flex; gap: 10px; font-size: 11px; color: var(--text-muted); margin-top: 6px; flex-wrap: wrap;}
 
-    /* Bottom Navigation Tabs */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); display: flex; border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 1000;}
-    .nav-tab { flex: 1; text-align: center; padding: 15px 0; font-size: 12px; font-weight: bold; color: var(--text-muted); }
-    .nav-tab.active { color: var(--accent); border-top: 2px solid var(--accent); }
-
-    /* Modals & Overlays */
-    .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: flex-end;}
-    .modal-content { background: var(--bg-base); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto;}
+    /* Context Modals & Loader */
+    .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: flex-end;}
+    .modal-content { background: var(--card-bg); width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 20px; }
     
-    /* Loader & Toast */
-    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(19, 19, 20, 0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; }
-    .spinner { border: 4px solid var(--bg-card); border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .btn { background: var(--accent-blue); color: #000; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%; border: none; font-size: 14px; cursor: pointer; margin-top: 10px;}
+    .btn-secondary { background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-subtle); }
+    
+    #loader { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(19,19,20,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column;}
+    .spinner { border: 4px solid var(--bg-dark); border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px;}
+    @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--accent); color: var(--bg-base); padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 2500;}
-    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    /* Context Menu Drawer */
-    #context-menu { flex-direction: column; gap: 10px; }
-    .ctx-btn { padding: 15px; background: var(--bg-card); border-radius: 12px; text-align: left; display: flex; gap: 15px; font-weight: bold; }
-    .ctx-btn.danger { color: var(--warning); }
+    /* Category List Styles */
+    .category-section { margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 15px;}
+    .category-title { font-size: 12px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: bold;}
   </style>
 </head>
 <body>
 
   <!-- Fullscreen Loader -->
-  <div id="loader"><div class="spinner"></div></div>
+  <div id="loader"><div class="spinner"></div><div style="font-weight:bold; font-size:12px; color:var(--accent-blue);">SYNCING MATRIX...</div></div>
 
-  <!-- Header Controls -->
-  <div class="header-controls">
-    <input type="text" id="global-search" placeholder="🔍 Deep Search..." oninput="renderView()">
-    <div class="filter-pills" id="assignee-filters">
-      <div class="pill active" onclick="setAssigneeFilter('ALL')">ALL</div>
-      <div class="pill" onclick="setAssigneeFilter('JEEVAN')">JEEVAN</div>
-      <div class="pill" onclick="setAssigneeFilter('RAVI KUMAR')">RAVI KUMAR</div>
-      <div class="pill" onclick="setAssigneeFilter('SANANTH')">SANANTH</div>
-      <div class="pill" onclick="setAssigneeFilter('UNASSIGNED')">UNASSIGNED</div>
+  <!-- Global Controls (Filters & Search) -->
+  <div class="controls-wrapper">
+    <input type="text" id="search-input" placeholder="🔍 Deep Search..." oninput="renderAll()">
+    <div class="filter-row" id="assignee-filters">
+      <div class="chip active" onclick="setAssigneeFilter('ALL')">ALL</div>
+      <div class="chip" onclick="setAssigneeFilter('JEEVAN')">JEEVAN</div>
+      <div class="chip" onclick="setAssigneeFilter('RAVI KUMAR')">RAVI KUMAR</div>
+      <div class="chip" onclick="setAssigneeFilter('SANANTH')">SANANTH</div>
+      <div class="chip" onclick="setAssigneeFilter('UNASSIGNED')">UNASSIGNED</div>
     </div>
   </div>
 
-  <!-- Main View Areas -->
-  <div id="view-tree" class="view-section active"></div>
-  <div id="view-schedule" class="view-section">
-    <div class="filter-pills" style="margin-bottom: 15px;">
-      <div class="pill active" id="tab-today" onclick="setSubTab('TODAY')">TODAY</div>
-      <div class="pill" id="tab-deadline" onclick="setSubTab('DEADLINE')">DEADLINE</div>
-      <div class="pill" id="tab-queue" onclick="setSubTab('QUEUE')">QUEUE</div>
+  <!-- VIEW: TREE -->
+  <div id="view-tree" class="tab-view active">
+    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px; overflow-x:auto; white-space:nowrap;" id="tree-breadcrumbs">📁 Root</div>
+    <div style="display:flex; gap:10px; margin-bottom:15px;">
+      <button class="chip" onclick="openCreateModal('folder')">+ New Folder</button>
+      <button class="chip" onclick="openCreateModal('job')">+ New Job Card</button>
+    </div>
+    <div id="tree-content"></div>
+  </div>
+
+  <!-- VIEW: SCHEDULE -->
+  <div id="view-schedule" class="tab-view">
+    <div class="filter-row" style="margin-bottom: 15px;">
+      <div class="chip active" id="tab-today" onclick="setScheduleTab('TODAY')">TODAY</div>
+      <div class="chip" id="tab-queue" onclick="setScheduleTab('QUEUE')">QUEUE</div>
     </div>
     <div id="schedule-content"></div>
+    <div class="category-section">
+      <div class="category-title">✅ Completed Operations</div>
+      <div id="schedule-completed-content"></div>
+    </div>
   </div>
-  <div id="view-others" class="view-section">
-    <div class="folder-item" onclick="openArchive()"><span style="font-size:24px">✅</span> Completed Archive</div>
+
+  <!-- VIEW: OTHERS -->
+  <div id="view-others" class="tab-view">
+    <div class="folder-item" onclick="openArchiveRoot()" style="background: rgba(109,213,140,0.1); border-color: var(--accent-green);">
+      <span style="font-size:20px;">📦</span> <span style="color:var(--accent-green);">Completed Jobs Archive</span>
+    </div>
+    <div class="category-section">
+      <div class="category-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📌 Custom Categories</span>
+        <span onclick="promptNewCategory()" style="font-size:16px; cursor:pointer;">+</span>
+      </div>
+      <div id="categories-list"></div>
+    </div>
   </div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
-    <div class="nav-tab active" id="nav-tree" onclick="switchMainTab('tree')">TREE</div>
-    <div class="nav-tab" id="nav-schedule" onclick="switchMainTab('schedule')">SCHEDULE</div>
-    <div class="nav-tab" id="nav-others" onclick="switchMainTab('others')">OTHERS</div>
+    <div class="nav-btn active" id="nav-tree" onclick="switchMainTab('tree')">TREE</div>
+    <div class="nav-btn" id="nav-schedule" onclick="switchMainTab('schedule')">SCHEDULE</div>
+    <div class="nav-btn" id="nav-others" onclick="switchMainTab('others')">OTHERS</div>
   </div>
 
-  <!-- Action Floating Button -->
-  <div style="position:fixed; bottom: 80px; right: 20px; z-index:500;">
-    <button class="btn" style="width: 50px; height: 50px; border-radius: 25px; font-size: 24px;" onclick="openCreateModal()">+</button>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast">Action Successful</div>
-
-  <!-- Modals -->
-  <!-- 1. Context Menu -->
-  <div class="modal-overlay" id="modal-context" onclick="closeModal('modal-context')">
-    <div class="modal-content" id="context-menu" onclick="event.stopPropagation()">
-      <div class="ctx-btn" onclick="executeContext('edit')">✏️ Edit Full</div>
-      <div class="ctx-btn" onclick="executeContext('duplicate')">📋 Duplicate</div>
-      <div class="ctx-btn danger" onclick="executeContext('delete')">🗑️ Delete</div>
+  <!-- Context Menu Drawer -->
+  <div class="modal" id="modal-context" onclick="closeModal('modal-context')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom:15px; font-size:14px; color:var(--text-muted);" id="context-title">Options</h3>
+      <button class="btn btn-secondary" onclick="executeContext('edit')">✏️ Edit / View Full</button>
+      <button class="btn btn-secondary" onclick="executeContext('category')">📌 Assign to Category</button>
+      <button class="btn btn-secondary" style="color:var(--accent-red); border-color:var(--accent-red);" onclick="executeContext('delete')">🗑️ Delete Permanently</button>
     </div>
   </div>
 
-  <!-- 2. Form Modal (Dynamic for Folder/Job/Step) -->
-  <div class="modal-overlay" id="modal-form" onclick="closeModal('modal-form')">
+  <!-- Form Modal (Dynamic Editor) -->
+  <div class="modal" id="modal-form" onclick="closeModal('modal-form')">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <h3 id="form-title" style="margin-bottom: 15px;">Create Item</h3>
+      <h3 id="form-title" style="margin-bottom: 15px;">Editor</h3>
       <div id="form-body"></div>
-      <button class="btn" onclick="saveForm()">Save & Sync</button>
+      <button class="btn" onclick="saveForm()">Save to Matrix</button>
       <button class="btn btn-secondary" onclick="closeModal('modal-form')">Cancel</button>
     </div>
   </div>
 
   <script>
-    // --- TELEGRAM SETUP ---
+    // --- INIT ---
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.setHeaderColor('#131314');
-    
-    // Web Audio Chimes
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playChime(type) {
-      if(audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      if(type === 'success') {
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-      } else {
-        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
-        gain.gain.setValueAtTime(1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-      }
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.5);
-    }
+    tg.requestFullscreen();
+    if (tg.setHeaderColor) tg.setHeaderColor('#131314');
 
-    // --- STATE MANAGEMENT ---
-    // Change this endpoint to your Cloudflare Worker URL
-    const API_BASE = "https://your-worker-url.workers.dev/api"; 
+    const API_BASE = "https://project1-brain.aeijeevan.workers.dev"; 
     
     let db = { folders: [], jobCards: [], processSteps: [] };
-    let currentMainTab = 'tree';
-    let currentFolderId = ''; // Root is empty
-    let folderHistory = [];
-    let currentAssigneeFilter = 'ALL';
-    let currentSubTab = 'TODAY';
-    let contextTarget = null; // { type: 'folder'|'job'|'step', id: '' }
+    let customCategories = ["Overdue", "Urgent Priority"]; // Local mock for categories list
+    
+    let state = {
+      mainTab: 'tree', subTab: 'TODAY', assigneeFilter: 'ALL',
+      treeFolderId: 'root', folderHistory: [],
+      archiveFolderId: null, archiveHistory: [], // Isolated history for archive reconstruction
+      othersViewMode: 'root', // root | archive | category
+      activeCategoryId: null,
+      contextItem: null // {type, id, title}
+    };
 
-    // API Wrapper
-    async function apiCall(endpoint, method = 'GET', body = null) {
+    // --- API WRAPPER ---
+    async function api(endpoint, method = 'GET', body = null) {
       document.getElementById('loader').style.display = 'flex';
-      const headers = {
-        'Content-Type': 'application/json',
-        'X-Telegram-User-Id': tg.initDataUnsafe?.user?.id?.toString() || '8545698010' // fallback for local test
-      };
+      const tgUserId = tg.initDataUnsafe?.user?.id?.toString() || '8822239844';
+      const headers = { 'Content-Type': 'application/json', 'X-Telegram-User-Id': tgUserId };
       const options = { method, headers };
-      if(body) options.body = method === 'POST' || method === 'PATCH' ? (typeof body === 'string' ? body : JSON.stringify(body)) : body;
+      if (body) options.body = JSON.stringify(body);
       
       try {
         const res = await fetch(`${API_BASE}${endpoint}`, options);
-        if(!res.ok) throw new Error(await res.text());
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         document.getElementById('loader').style.display = 'none';
         return data;
       } catch (err) {
         document.getElementById('loader').style.display = 'none';
-        showToast('Error: ' + err.message);
+        tg.HapticFeedback.notificationOccurred('error');
+        alert('Network Error: ' + err.message);
         throw err;
       }
     }
 
-    // --- INITIALIZATION ---
-    async function initApp() {
-      tg.BackButton.onClick(() => handleBack());
-      await loadData();
-    }
-
     async function loadData() {
-      const data = await apiCall('/data');
+      const data = await api('/api/data');
       db.folders = data.folders || [];
       db.jobCards = data.jobCards || [];
       db.processSteps = data.processSteps || [];
-      renderView();
+      renderAll();
     }
 
-    // --- NAVIGATION & RENDERING ---
+    document.addEventListener('DOMContentLoaded', loadData);
+
+    // --- NAVIGATION LOGIC ---
     function switchMainTab(tab) {
-      currentMainTab = tab;
-      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      state.mainTab = tab;
+      document.querySelectorAll('.tab-view, .nav-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(`view-${tab}`).classList.add('active');
       document.getElementById(`nav-${tab}`).classList.add('active');
+      updateBackButton();
+      renderAll();
+    }
+
+    tg.BackButton.onClick(() => {
+      if (document.getElementById('modal-form').style.display === 'flex') { closeModal('modal-form'); return; }
+      if (document.getElementById('modal-context').style.display === 'flex') { closeModal('modal-context'); return; }
       
-      if(tab === 'tree') tg.BackButton[currentFolderId ? 'show' : 'hide']();
-      else tg.BackButton.hide();
-      
-      renderView();
-    }
-
-    function handleBack() {
-      if(folderHistory.length > 0) {
-        currentFolderId = folderHistory.pop();
-        tg.BackButton[folderHistory.length > 0 ? 'show' : 'hide']();
-        renderView();
-      }
-    }
-
-    function openFolder(fId) {
-      folderHistory.push(currentFolderId);
-      currentFolderId = fId;
-      tg.BackButton.show();
-      renderView();
-    }
-
-    function setAssigneeFilter(assignee) {
-      currentAssigneeFilter = assignee;
-      document.querySelectorAll('#assignee-filters .pill').forEach(p => p.classList.remove('active'));
-      event.target.classList.add('active');
-      renderView();
-    }
-
-    function setSubTab(tab) {
-      currentSubTab = tab;
-      document.querySelectorAll('#view-schedule .pill').forEach(p => p.classList.remove('active'));
-      document.getElementById(`tab-${tab.toLowerCase()}`).classList.add('active');
-      renderView();
-    }
-
-    function toggleJob(jobId) {
-      const el = document.getElementById(`job-${jobId}`);
-      el.classList.toggle('expanded');
-      const toggleBtn = el.querySelector('.job-toggle-btn');
-      toggleBtn.innerText = el.classList.contains('expanded') ? 'v' : '^';
-    }
-
-    // Deep search logic
-    function matchSearch(str, query) {
-      if(!query) return true;
-      return str.toLowerCase().includes(query.toLowerCase());
-    }
-
-    function renderView() {
-      const q = document.getElementById('global-search').value;
-      if (currentMainTab === 'tree') renderTree(q);
-      else if (currentMainTab === 'schedule') renderSchedule(q);
-    }
-
-    function renderTree(query) {
-      const container = document.getElementById('view-tree');
-      container.innerHTML = '';
-
-      // 1. Render Folders in current scope
-      const folders = db.folders.filter(f => 
-        (query ? matchSearch(f[1], query) : (f[2] || '') === currentFolderId)
-      );
-      
-      folders.forEach(f => {
-        const div = document.createElement('div');
-        div.className = 'folder-item';
-        div.innerHTML = `<span style="font-size:24px">📁</span> <span>${f[1]}</span>`;
-        div.onclick = () => openFolder(f[0]);
-        div.oncontextmenu = (e) => showContext(e, 'folder', f[0]);
-        addLongPress(div, 'folder', f[0]);
-        container.appendChild(div);
-      });
-
-      // 2. Render Job Cards in current scope
-      const jobs = db.jobCards.filter(j => 
-        j[5] !== 'TRUE' && // Not archived
-        (query ? matchSearch(j[2], query) : (j[1] || '') === currentFolderId)
-      );
-
-      jobs.forEach(j => {
-        const div = document.createElement('div');
-        div.className = 'job-card';
-        div.id = `job-${j[0]}`;
-        
-        let steps = db.processSteps.filter(s => s[1] === j[0]);
-        
-        // Filter by assignee
-        if(currentAssigneeFilter !== 'ALL') {
-          steps = steps.filter(s => s[3] === currentAssigneeFilter || (currentAssigneeFilter==='UNASSIGNED' && !s[3]));
-          if(steps.length === 0 && !query) return; // hide job if no steps match
+      if (state.mainTab === 'tree' && state.folderHistory.length > 0) {
+        state.treeFolderId = state.folderHistory.pop();
+        renderAll();
+      } else if (state.mainTab === 'others') {
+        if (state.othersViewMode === 'archive' && state.archiveHistory.length > 0) {
+          state.archiveFolderId = state.archiveHistory.pop();
+          if (state.archiveFolderId === 'root') state.othersViewMode = 'root';
+        } else {
+          state.othersViewMode = 'root';
+          state.activeCategoryId = null;
         }
+        renderAll();
+      }
+    });
 
-        // Sort completed to bottom
-        steps.sort((a,b) => (a[4]==='Completed' ? 1 : 0) - (b[4]==='Completed' ? 1 : 0));
-        const allCompleted = steps.length > 0 && steps.every(s => s[4] === 'Completed');
+    function updateBackButton() {
+      const show = (state.mainTab === 'tree' && state.treeFolderId !== 'root') || (state.mainTab === 'others' && state.othersViewMode !== 'root') || document.querySelector('.modal[style="display: flex;"]');
+      show ? tg.BackButton.show() : tg.BackButton.hide();
+    }
 
-        div.innerHTML = `
-          <div class="job-header" onclick="toggleJob('${j[0]}')">
+    function openFolder(fId, isArchive = false) {
+      if (isArchive) {
+        state.archiveHistory.push(state.archiveFolderId);
+        state.archiveFolderId = fId;
+      } else {
+        state.folderHistory.push(state.treeFolderId);
+        state.treeFolderId = fId;
+      }
+      renderAll();
+    }
+
+    function setAssigneeFilter(val) {
+      state.assigneeFilter = val;
+      document.querySelectorAll('#assignee-filters .chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      renderAll();
+    }
+
+    function setScheduleTab(val) {
+      state.subTab = val;
+      document.querySelectorAll('#view-schedule .chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      renderAll();
+    }
+
+    function toggleExpand(id) {
+      const el = document.getElementById(id);
+      if(el) el.classList.toggle('expanded');
+    }
+
+    // --- RENDER LOGIC ---
+    function matchSearch(str) {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      return !q || str.toLowerCase().includes(q);
+    }
+
+    function getPathString(folderId) {
+      let path = []; let curr = db.folders.find(f => f[0] === folderId);
+      while(curr) { path.unshift(curr[1]); curr = db.folders.find(f => f[0] === curr[2]); }
+      return path.length ? path.join(' / ') : 'Root';
+    }
+
+    function renderAll() {
+      if (state.mainTab === 'tree') renderTree();
+      if (state.mainTab === 'schedule') renderSchedule();
+      if (state.mainTab === 'others') renderOthers();
+      updateBackButton();
+    }
+
+    function createJobHTML(j, isArchive = false, isSchedule = false, customStepsFilter = null) {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      let steps = db.processSteps.filter(s => s[1] === j[0]);
+      
+      if (state.assigneeFilter !== 'ALL') steps = steps.filter(s => s[3] === state.assigneeFilter);
+      if (customStepsFilter) steps = steps.filter(customStepsFilter);
+      
+      // Requirement 1 & 6: Completed drop to bottom
+      steps.sort((a,b) => (a[4]==='Completed'?1:0) - (b[4]==='Completed'?1:0));
+      
+      const allCompleted = steps.length > 0 && steps.every(s => s[4] === 'Completed');
+      const headBadge = j[4] ? `<div class="folder-head-badge">FOLDER HEAD: ${j[4]}</div>` : '';
+
+      return `
+        <div class="job-card" id="card-${j[0]}">
+          <div class="job-header" onclick="toggleExpand('card-${j[0]}')">
             <div>
-              <div class="job-title">${j[2]}</div>
-              ${j[4] ? `<span class="folder-head-tag">Head: ${j[4]}</span>` : ''}
+              ${headBadge}
+              <div class="job-title">⚙️ ${j[2]}</div>
+              ${isSchedule ? `<div style="font-size:10px; color:var(--text-muted);">📁 Path: ${getPathString(j[1])}</div>` : ''}
             </div>
-            <div class="job-toggle-btn" style="padding:10px;">^</div>
+            <div class="toggle-icon">v</div>
           </div>
           <div class="steps-container">
             ${steps.map(s => `
-              <div class="step-item ${s[4]==='Completed'?'completed':(s[4]==='In Progress'?'in-progress':'')}" oncontextmenu="showContext(event, 'step', '${s[0]}')">
-                <div style="font-weight:bold;">${s[2]}</div>
-                <div class="step-meta">
-                  <span>👤 ${s[3] || 'Unassigned'}</span>
-                  <span>📅 ${s[5] || '-'} ${s[6] || '-'}</span>
-                  <span>⚙️ ${s[4]}</span>
+              <div class="step-item ${s[4]==='Completed'?'completed':(s[4]==='In Progress'?'in-progress':'')}" oncontextmenu="openContext(event, 'step', '${s[0]}', '${s[2]}')">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong style="font-size:13px;">${s[2]}</strong>
+                  <select style="width:auto; padding:2px 5px; margin:0; font-size:11px;" onchange="updateStepStatus('${s[0]}', this.value, '${j[2]}', '${getPathString(j[1])}')">
+                    <option value="Not Started" ${s[4]==='Not Started'?'selected':''}>Not Started</option>
+                    <option value="In Progress" ${s[4]==='In Progress'?'selected':''}>In Progress</option>
+                    <option value="In Hold" ${s[4]==='In Hold'?'selected':''}>In Hold</option>
+                    <option value="Completed" ${s[4]==='Completed'?'selected':''}>Completed</option>
+                  </select>
                 </div>
-                ${s[7] ? `<a href="${s[7]}" target="_blank" style="color:var(--accent); font-size:11px; display:block; margin-top:5px;">📎 Attachment</a>` : ''}
+                <div class="step-meta">
+                  <span>👤 ${s[3]}</span>
+                  ${s[5] ? `<span>📅 ${s[5]} ${s[6]||''}</span>` : ''}
+                  ${s[10] ? `<span style="color:var(--accent-blue);">📌 ${s[10]}</span>` : ''}
+                </div>
+                ${s[9] ? `<div style="font-size:10px; margin-top:5px; color:var(--text-muted);">📝 ${s[9]}</div>` : ''}
+                ${s[7] ? `<a href="${s[7]}" target="_blank" style="font-size:11px; color:var(--accent-blue); display:block; margin-top:5px;">📎 Attachment</a>` : ''}
               </div>
             `).join('')}
-            ${allCompleted ? `<button class="btn btn-secondary" onclick="archiveJob('${j[0]}')">📦 Archive Job</button>` : ''}
+            ${!isArchive && allCompleted ? `<button class="btn btn-secondary" onclick="archiveJob('${j[0]}', '${j[2]}')">📦 Archive Completed Job</button>` : ''}
           </div>
-        `;
+        </div>
+      `;
+    }
+
+    function renderTree() {
+      const c = document.getElementById('tree-content'); c.innerHTML = '';
+      document.getElementById('tree-breadcrumbs').innerText = '📂 ' + getPathString(state.treeFolderId);
+
+      const q = document.getElementById('search-input').value.toLowerCase();
+      
+      let folders = db.folders.filter(f => q ? f[1].toLowerCase().includes(q) : f[2] === state.treeFolderId);
+      folders.forEach(f => {
+        c.innerHTML += `<div class="folder-item" onclick="openFolder('${f[0]}')" oncontextmenu="openContext(event, 'folder', '${f[0]}', '${f[1]}')">📁 ${f[1]}</div>`;
+      });
+
+      let jobs = db.jobCards.filter(j => j[5] !== 'TRUE' && (q ? j[2].toLowerCase().includes(q) : j[1] === state.treeFolderId));
+      jobs.forEach(j => c.innerHTML += createJobHTML(j, false, false));
+    }
+
+    function renderSchedule() {
+      const activeC = document.getElementById('schedule-content'); activeC.innerHTML = '';
+      const compC = document.getElementById('schedule-completed-content'); compC.innerHTML = '';
+
+      const q = document.getElementById('search-input').value.toLowerCase();
+      
+      // Requirement 6: Active and Completed sections in schedule
+      db.jobCards.filter(j => j[5] !== 'TRUE').forEach(j => {
+        if(q && !j[2].toLowerCase().includes(q)) return;
         
-        // Attach long press to header
-        const header = div.querySelector('.job-header');
-        header.oncontextmenu = (e) => { e.stopPropagation(); showContext(e, 'job', j[0]); };
-        addLongPress(header, 'job', j[0]);
+        let hasActive = db.processSteps.some(s => s[1]===j[0] && s[4]!=='Completed' && (state.assigneeFilter==='ALL'||s[3]===state.assigneeFilter));
+        let hasComp = db.processSteps.some(s => s[1]===j[0] && s[4]==='Completed' && (state.assigneeFilter==='ALL'||s[3]===state.assigneeFilter));
 
-        // Attach long press to steps
-        div.querySelectorAll('.step-item').forEach((stepEl, idx) => {
-           addLongPress(stepEl, 'step', steps[idx][0]);
-        });
-
-        container.appendChild(div);
+        if(hasActive) activeC.innerHTML += createJobHTML(j, false, true, s => s[4] !== 'Completed');
+        if(hasComp) compC.innerHTML += createJobHTML(j, false, true, s => s[4] === 'Completed');
       });
     }
 
-    function renderSchedule(query) {
-       const container = document.getElementById('schedule-content');
-       container.innerHTML = '';
-       
-       let steps = db.processSteps.filter(s => s[4] !== 'Completed');
-       if(currentAssigneeFilter !== 'ALL') {
-          steps = steps.filter(s => s[3] === currentAssigneeFilter || (currentAssigneeFilter==='UNASSIGNED' && !s[3]));
-       }
-       if(query) steps = steps.filter(s => matchSearch(s[2], query));
+    function renderOthers() {
+      const catList = document.getElementById('categories-list');
+      const view = document.getElementById('view-others');
 
-       // Sort based on Date/Time (Dummy implementation for TODAY/DEADLINE/QUEUE structure)
-       steps.forEach(s => {
-          const j = db.jobCards.find(job => job[0] === s[1]);
-          if(!j || j[5] === 'TRUE') return; // Skip archived or orphaned
-
-          const div = document.createElement('div');
-          div.className = 'job-card';
-          div.innerHTML = `
-            <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">📁 Job: ${j[2]}</div>
-            <div class="step-item ${s[4]==='In Progress'?'in-progress':''}">
-              <div style="font-weight:bold;">${s[2]}</div>
-              <div class="step-meta">
-                <span>👤 ${s[3] || 'Unassigned'}</span>
-                <span>📅 ${s[5] || '-'} ${s[6] || '-'}</span>
-              </div>
-            </div>
-            <select style="margin-top:10px; margin-bottom:0;" onchange="fastUpdateStepStatus('${s[0]}', this.value)">
-                <option value="Not Started" ${s[4]==='Not Started'?'selected':''}>Not Started</option>
-                <option value="In Progress" ${s[4]==='In Progress'?'selected':''}>In Progress</option>
-                <option value="In Hold" ${s[4]==='In Hold'?'selected':''}>In Hold</option>
-                <option value="Completed" ${s[4]==='Completed'?'selected':''}>Completed</option>
-            </select>
-          `;
-          container.appendChild(div);
-       });
-    }
-
-    function openArchive() {
-       const jobs = db.jobCards.filter(j => j[5] === 'TRUE');
-       // Quick inline render for archive
-       const container = document.getElementById('view-others');
-       container.innerHTML = '<div class="folder-item" onclick="renderView()"><span style="font-size:24px">⬅️</span> Back to Others</div><h3>Archived Jobs</h3>';
-       jobs.forEach(j => {
-          container.innerHTML += `<div class="job-card"><div class="job-title">${j[2]}</div></div>`;
-       });
-    }
-
-    // --- ACTIONS & API ---
-    async function fastUpdateStepStatus(stepId, status) {
-        const stepRow = db.processSteps.find(s => s[0] === stepId);
-        if(!stepRow) return;
-        stepRow[4] = status; // Update local
-        stepRow[12] = new Date().toISOString(); // Updated At
+      if (state.othersViewMode === 'root') {
+        catList.style.display = 'block';
+        catList.innerHTML = customCategories.map(cat => `<div class="folder-item" onclick="openCategory('${cat}')">📌 ${cat}</div>`).join('');
+        document.querySelectorAll('#view-others > .category-section:not(:first-of-type)').forEach(e => e.remove());
+      } 
+      else if (state.othersViewMode === 'archive') {
+        // Requirement 1: Reconstruct precise exact folder path for archived items
+        catList.style.display = 'none';
         
-        tg.HapticFeedback.notificationOccurred('success');
-        playChime('success');
-        await apiCall('/steps', 'PATCH', stepRow);
-        showToast('Status Updated');
-        renderView();
+        // Find all archived jobs
+        const archivedJobs = db.jobCards.filter(j => j[5] === 'TRUE');
+        // Find which folders contain them, or their parents
+        const validFolderIds = new Set();
+        archivedJobs.forEach(j => {
+          let currId = j[1];
+          while(currId && currId !== 'root') {
+            validFolderIds.add(currId);
+            const f = db.folders.find(x => x[0] === currId);
+            currId = f ? f[2] : null;
+          }
+        });
+
+        const container = document.createElement('div');
+        container.className = 'category-section';
+        container.innerHTML = `<div class="category-title">📂 Archive Path: ${getPathString(state.archiveFolderId)}</div>`;
+        
+        // Render subfolders that are valid in archive
+        db.folders.filter(f => f[2] === state.archiveFolderId && validFolderIds.has(f[0])).forEach(f => {
+          container.innerHTML += `<div class="folder-item" onclick="openFolder('${f[0]}', true)">📁 ${f[1]}</div>`;
+        });
+
+        // Render archived jobs in this specific folder
+        archivedJobs.filter(j => j[1] === state.archiveFolderId).forEach(j => {
+          container.innerHTML += createJobHTML(j, true);
+        });
+
+        document.querySelectorAll('#view-others > .category-section:not(:first-of-type)').forEach(e => e.remove());
+        view.appendChild(container);
+      }
+      else if (state.othersViewMode === 'category') {
+        catList.style.display = 'none';
+        const container = document.createElement('div');
+        container.className = 'category-section';
+        container.innerHTML = `<div class="category-title">📌 Category: ${state.activeCategoryId}</div>`;
+        
+        // Render jobs/steps tagged with this category
+        db.jobCards.filter(j => j[5] !== 'TRUE').forEach(j => {
+          let hasTag = db.processSteps.some(s => s[1]===j[0] && s[10]===state.activeCategoryId);
+          if(hasTag) container.innerHTML += createJobHTML(j, false, true, s => s[10]===state.activeCategoryId);
+        });
+
+        document.querySelectorAll('#view-others > .category-section:not(:first-of-type)').forEach(e => e.remove());
+        view.appendChild(container);
+      }
     }
 
-    async function archiveJob(jobId) {
-        if(!confirm("Archive this job?")) return;
-        await apiCall('/archive', 'POST', { jobId });
-        playChime('success');
-        showToast('Job Archived');
-        await loadData(); // Full reload to get true state
+    function openArchiveRoot() {
+      state.othersViewMode = 'archive';
+      state.archiveFolderId = 'root';
+      state.archiveHistory = [];
+      renderAll();
     }
 
-    // --- LONG PRESS & CONTEXT MENU ---
-    let pressTimer;
-    function addLongPress(el, type, id) {
-       el.addEventListener('touchstart', (e) => {
-         pressTimer = setTimeout(() => showContext(e, type, id), 500);
-       }, {passive:true});
-       el.addEventListener('touchend', () => clearTimeout(pressTimer));
-       el.addEventListener('touchmove', () => clearTimeout(pressTimer));
-       
-       el.addEventListener('mousedown', (e) => {
-         pressTimer = setTimeout(() => showContext(e, type, id), 500);
-       });
-       el.addEventListener('mouseup', () => clearTimeout(pressTimer));
-       el.addEventListener('mousemove', () => clearTimeout(pressTimer));
+    function openCategory(cat) {
+      state.othersViewMode = 'category';
+      state.activeCategoryId = cat;
+      renderAll();
     }
 
-    function showContext(e, type, id) {
-       e.preventDefault();
-       tg.HapticFeedback.impactOccurred('heavy');
-       contextTarget = { type, id };
-       document.getElementById('modal-context').style.display = 'flex';
+    function promptNewCategory() {
+      const name = prompt("Enter new category name:");
+      if(name && !customCategories.includes(name)) { customCategories.push(name); renderAll(); }
     }
 
-    function closeModal(id) {
-       document.getElementById(id).style.display = 'none';
+    // --- INTERACTIVE ACTIONS ---
+    async function updateStepStatus(stepId, newStatus, jobTitle, pathStr) {
+      const step = db.processSteps.find(s => s[0] === stepId);
+      const oldStatus = step[4];
+      step[4] = newStatus; step[12] = new Date().toISOString();
+      
+      tg.HapticFeedback.impactOccurred('medium');
+      await api('/api/steps', 'PATCH', { step, notifyDetails: { jobTitle, oldStatus, path: pathStr } });
+      renderAll();
+    }
+
+    async function archiveJob(jobId, jobTitle) {
+      if(!confirm("Archive this job? It will move to Others -> Completed Archive matching its folder structure.")) return;
+      const job = db.jobCards.find(j => j[0] === jobId);
+      await api('/api/archive', 'POST', { jobId, jobTitle, pathStr: getPathString(job[1]) });
+      tg.HapticFeedback.notificationOccurred('success');
+      await loadData();
+    }
+
+    // --- CONTEXT MENU & FORMS ---
+    let builderSteps = [];
+    
+    function openContext(e, type, id, title) {
+      e.preventDefault();
+      tg.HapticFeedback.impactOccurred('heavy');
+      state.contextItem = { type, id, title };
+      document.getElementById('context-title').innerText = `${type.toUpperCase()}: ${title}`;
+      document.getElementById('modal-context').style.display = 'flex';
+      updateBackButton();
     }
 
     async function executeContext(action) {
-       closeModal('modal-context');
-       const { type, id } = contextTarget;
-       
-       if (action === 'delete') {
-          if(!confirm(`Delete this ${type}? This cannot be undone.`)) return;
-          await apiCall('/delete', 'POST', { type, ids: [id] });
-          playChime('delete');
-          showToast('Item Deleted');
+      closeModal('modal-context');
+      const { type, id, title } = state.contextItem;
+      
+      if (action === 'delete') {
+        if(!confirm(`Delete ${title}?`)) return;
+        await api('/api/delete', 'POST', { type, ids: [id], title });
+        await loadData();
+      } else if (action === 'edit') {
+        openCreateModal(type, id);
+      } else if (action === 'category' && type === 'step') {
+        const cat = prompt(`Assign to category:\nAvailable: ${customCategories.join(', ')}`);
+        if (cat) {
+          const step = db.processSteps.find(s => s[0] === id);
+          step[10] = cat;
+          await api('/api/steps', 'PATCH', { step, notifyDetails: null }); // silent category update
           await loadData();
-       } 
-       else if (action === 'edit') {
-           // Basic routing to modal
-           openCreateModal(type, id);
-       }
+        }
+      }
     }
 
-    // --- FORMS & MODALS ---
-    let currentJobStepsBuilder = [];
-    
-    function openCreateModal(type = 'menu', id = null) {
-       const body = document.getElementById('form-body');
-       document.getElementById('modal-form').style.display = 'flex';
-       
-       if (type === 'menu') {
-           document.getElementById('form-title').innerText = "Create New...";
-           body.innerHTML = `
-              <button class="btn" style="margin-bottom:10px;" onclick="openCreateModal('folder')">📁 New Folder</button>
-              <button class="btn" onclick="openCreateModal('job')">⚙️ New Job Card</button>
-           `;
-           return;
-       }
+    function openCreateModal(type, id = null) {
+      const body = document.getElementById('form-body');
+      document.getElementById('modal-form').style.display = 'flex';
+      updateBackButton();
+      state.contextItem = { formType: type };
 
-       if (type === 'folder') {
-           document.getElementById('form-title').innerText = id ? "Edit Folder" : "New Folder";
-           let f = id ? db.folders.find(x => x[0] === id) : ['f_'+Date.now(), '', currentFolderId, new Date().toISOString(), ''];
-           body.innerHTML = `
-             <input type="hidden" id="f_id" value="${f[0]}">
-             <input type="hidden" id="f_parent" value="${f[2]}">
-             <input type="hidden" id="f_created" value="${f[3]}">
-             <label>Folder Name</label><input type="text" id="f_name" value="${f[1]}">
-             <label>Category</label><input type="text" id="f_category" value="${f[4]}">
-           `;
-           contextTarget = { formType: 'folder' };
-       }
-
-       if (type === 'job') {
-           document.getElementById('form-title').innerText = id ? "Edit Job" : "New Job Card";
-           let j = id ? db.jobCards.find(x => x[0] === id) : ['j_'+Date.now(), currentFolderId, '', new Date().toISOString(), '', 'FALSE'];
-           currentJobStepsBuilder = id ? JSON.parse(JSON.stringify(db.processSteps.filter(s => s[1] === id))) : [];
-           
-           renderJobForm(j);
-           contextTarget = { formType: 'job', jobId: j[0] };
-       }
-    }
-
-    function renderJobForm(j) {
-        const body = document.getElementById('form-body');
-        let stepsHtml = currentJobStepsBuilder.map((s, idx) => `
-            <div style="border:1px solid var(--border); padding:10px; margin-bottom:10px; border-radius:8px;">
-                <input type="text" placeholder="Step Title" value="${s[2]}" onchange="currentJobStepsBuilder[${idx}][2]=this.value">
-                <select onchange="currentJobStepsBuilder[${idx}][3]=this.value">
-                   <option value="">Assignee...</option>
-                   <option value="JEEVAN" ${s[3]==='JEEVAN'?'selected':''}>JEEVAN</option>
-                   <option value="RAVI KUMAR" ${s[3]==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option>
-                   <option value="SANANTH" ${s[3]==='SANANTH'?'selected':''}>SANANTH</option>
-                </select>
-                <div style="display:flex; gap:10px;">
-                    <input type="date" value="${s[5]}" onchange="currentJobStepsBuilder[${idx}][5]=this.value">
-                    <input type="time" value="${s[6]}" onchange="currentJobStepsBuilder[${idx}][6]=this.value">
-                </div>
-                <textarea placeholder="Notes" onchange="currentJobStepsBuilder[${idx}][9]=this.value">${s[9]||''}</textarea>
-                <input type="file" onchange="handleFileUpload(event, ${idx})">
-                ${s[7] ? `<small>File Attached</small>` : ''}
-            </div>
-        `).join('');
-
+      if (type === 'folder') {
+        document.getElementById('form-title').innerText = id ? "Edit Folder" : "New Folder";
+        let f = id ? db.folders.find(x => x[0] === id) : [`FLD-${Date.now()}`, '', state.treeFolderId, new Date().toISOString(), ''];
         body.innerHTML = `
-             <input type="hidden" id="j_id" value="${j[0]}">
-             <input type="hidden" id="j_folder" value="${j[1]}">
-             <input type="hidden" id="j_created" value="${j[3]}">
-             <input type="hidden" id="j_archived" value="${j[5]}">
-             
-             <label>Job Title</label><input type="text" id="j_title" value="${j[2]}">
-             <label>Folder Head ID</label><input type="text" id="j_head" value="${j[4]}">
-             
-             <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-             <h4>Operation Steps</h4>
-             <div id="steps-builder-list" style="margin-top:10px;">${stepsHtml}</div>
-             <button class="btn btn-secondary" onclick="addJobStep()">+ Add Operation Step</button>
+          <input type="hidden" id="f_id" value="${f[0]}">
+          <input type="hidden" id="f_parent" value="${f[2]}">
+          <label style="font-size:11px; color:var(--text-muted);">Folder Name</label>
+          <input type="text" id="f_name" value="${f[1]}">
         `;
-    }
-
-    function addJobStep() {
-        const stepId = 's_' + Date.now();
-        // Schema: Step_ID, Job_ID, Step_Title, Assignee, Status, Date, Time, Attachment_Url, Linked_Job, Notes, Category, Created_At, Updated_At
-        currentJobStepsBuilder.push([stepId, contextTarget.jobId, '', '', 'Not Started', '', '', '', '', '', '', new Date().toISOString(), new Date().toISOString()]);
-        renderJobForm([
-           document.getElementById('j_id').value,
-           document.getElementById('j_folder').value,
-           document.getElementById('j_title').value,
-           document.getElementById('j_created').value,
-           document.getElementById('j_head').value,
-           document.getElementById('j_archived').value
-        ]);
-    }
-
-    async function handleFileUpload(e, idx) {
-        const file = e.target.files[0];
-        if(!file) return;
-        document.getElementById('loader').style.display = 'flex';
+      } 
+      else if (type === 'job') {
+        document.getElementById('form-title').innerText = id ? "Edit Job Card" : "New Job Card";
+        let j = id ? db.jobCards.find(x => x[0] === id) : [`JOB-${Date.now()}`, state.treeFolderId, '', new Date().toISOString(), '', 'FALSE'];
+        builderSteps = id ? JSON.parse(JSON.stringify(db.processSteps.filter(s => s[1] === id))) : [];
+        state.contextItem.jobId = j[0];
         
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const base64Data = reader.result.split(',')[1];
-            try {
-                const res = await apiCall('/upload-drive-file', 'POST', {
-                    fileName: file.name,
-                    mimeType: file.type,
-                    base64Data: base64Data,
-                    folderPath: ["TRACE_Matrix", document.getElementById('j_title').value]
-                });
-                currentJobStepsBuilder[idx][7] = res.url; // Save URL from App Script
-                showToast("File Uploaded");
-            } catch(e) {
-                showToast("Upload Failed");
-            }
-            document.getElementById('loader').style.display = 'none';
-            // re-render form
-            renderJobForm([document.getElementById('j_id').value, document.getElementById('j_folder').value, document.getElementById('j_title').value, document.getElementById('j_created').value, document.getElementById('j_head').value, document.getElementById('j_archived').value]);
+        // Requirement 7: Folder Head calculation based on selected path
+        const renderJobUI = () => {
+          const currentDestFolder = document.getElementById('j_folder') ? document.getElementById('j_folder').value : j[1];
+          let parentOpts = `<option value="">None</option>`;
+          
+          let curr = db.folders.find(f => f[0] === currentDestFolder);
+          while (curr) {
+            parentOpts += `<option value="${curr[1]}" ${j[4]===curr[1]?'selected':''}>${curr[1]}</option>`;
+            curr = db.folders.find(f => f[0] === curr[2]);
+          }
+
+          let stepsHtml = builderSteps.map((s, idx) => `
+            <div style="background:var(--bg-dark); padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border-subtle);">
+              <input type="text" placeholder="Operation Title" value="${s[2]}" onchange="builderSteps[${idx}][2]=this.value">
+              <div style="display:flex; gap:10px;">
+                <select onchange="builderSteps[${idx}][3]=this.value">
+                  <option value="UNASSIGNED" ${s[3]==='UNASSIGNED'?'selected':''}>UNASSIGNED</option>
+                  <option value="JEEVAN" ${s[3]==='JEEVAN'?'selected':''}>JEEVAN</option>
+                  <option value="RAVI KUMAR" ${s[3]==='RAVI KUMAR'?'selected':''}>RAVI KUMAR</option>
+                  <option value="SANANTH" ${s[3]==='SANANTH'?'selected':''}>SANANTH</option>
+                </select>
+                <select onchange="builderSteps[${idx}][4]=this.value">
+                  <option value="Not Started" ${s[4]==='Not Started'?'selected':''}>Not Started</option>
+                  <option value="In Progress" ${s[4]==='In Progress'?'selected':''}>In Progress</option>
+                  <option value="In Hold" ${s[4]==='In Hold'?'selected':''}>In Hold</option>
+                  <option value="Completed" ${s[4]==='Completed'?'selected':''}>Completed</option>
+                </select>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <input type="date" value="${s[5]}" onchange="builderSteps[${idx}][5]=this.value">
+                <input type="time" value="${s[6]}" onchange="builderSteps[${idx}][6]=this.value">
+              </div>
+              <textarea placeholder="Manufacturing Specs/Notes" onchange="builderSteps[${idx}][9]=this.value">${s[9]}</textarea>
+              <input type="file" onchange="handleFile(event, ${idx})">
+              ${s[7] ? `<small style="color:var(--accent-blue)">File Attached</small>` : ''}
+              <button class="btn btn-secondary" style="color:var(--accent-red); padding:5px;" onclick="builderSteps.splice(${idx},1); document.getElementById('re-render-btn').click();">Remove Step</button>
+            </div>
+          `).join('');
+
+          body.innerHTML = `
+            <input type="hidden" id="j_id" value="${j[0]}">
+            <input type="hidden" id="j_archived" value="${j[5]}">
+            <label style="font-size:11px; color:var(--text-muted);">Job Title</label>
+            <input type="text" id="j_title" value="${j[2]}" onchange="j[2]=this.value">
+            
+            <label style="font-size:11px; color:var(--text-muted);">Destination Folder</label>
+            <select id="j_folder" onchange="document.getElementById('re-render-btn').click()">
+              ${db.folders.map(f => `<option value="${f[0]}" ${f[0]===currentDestFolder?'selected':''}>${f[1]}</option>`).join('')}
+            </select>
+            
+            <label style="font-size:11px; color:var(--text-muted);">Folder Head (Tag parent folder logically)</label>
+            <select id="j_head">${parentOpts}</select>
+            
+            <hr style="border:0; border-top:1px solid var(--border-subtle); margin:15px 0;">
+            <h4 style="margin-bottom:10px;">Process Chart Operations</h4>
+            ${stepsHtml}
+            <button id="re-render-btn" style="display:none;" onclick="renderJobFormWrapper()"></button>
+            <button class="chip" style="width:100%; padding:10px;" onclick="builderSteps.push(['STP-${Date.now()}','${j[0]}','','UNASSIGNED','Not Started','','','','','','','','']); document.getElementById('re-render-btn').click();">+ Add Operation Step</button>
+          `;
         };
-        reader.readAsDataURL(file);
+        // Hack to allow innerHTML re-render without losing closure references
+        window.renderJobFormWrapper = renderJobUI;
+        renderJobUI();
+      }
+    }
+
+    async function handleFile(e, idx) {
+      const file = e.target.files[0]; if(!file) return;
+      document.getElementById('loader').style.display = 'flex';
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result.split(',')[1];
+        try {
+          const res = await api('/api/upload-drive-file', 'POST', {
+            fileName: file.name, mimeType: file.type, base64Data,
+            folderPath: ["TRACE_Matrix", document.getElementById('j_title').value]
+          });
+          builderSteps[idx][7] = res.fileUrl;
+        } catch(err){}
+        document.getElementById('loader').style.display = 'none';
+        window.renderJobFormWrapper();
+      };
+      reader.readAsDataURL(file);
     }
 
     async function saveForm() {
-       if (contextTarget.formType === 'folder') {
-           const payload = {
-              Folder_ID: document.getElementById('f_id').value,
-              Folder_Name: document.getElementById('f_name').value,
-              Parent_Folder_ID: document.getElementById('f_parent').value,
-              Created_At: document.getElementById('f_created').value,
-              Category: document.getElementById('f_category').value
-           };
-           await apiCall('/folders', 'POST', payload);
-       } else if (contextTarget.formType === 'job') {
-           const jobRow = [
-               document.getElementById('j_id').value,
-               document.getElementById('j_folder').value,
-               document.getElementById('j_title').value,
-               document.getElementById('j_created').value,
-               document.getElementById('j_head').value,
-               document.getElementById('j_archived').value
-           ];
-           await apiCall('/jobcards', 'POST', { job: jobRow, steps: currentJobStepsBuilder });
-       }
-       
-       closeModal('modal-form');
-       playChime('success');
-       showToast('Saved Successfully');
-       await loadData();
+      if (state.contextItem.formType === 'folder') {
+        const payload = {
+          Folder_ID: document.getElementById('f_id').value,
+          Folder_Name: document.getElementById('f_name').value,
+          Parent_Folder_ID: document.getElementById('f_parent').value,
+          Created_At: new Date().toISOString()
+        };
+        await api('/api/folders', 'POST', payload);
+      } 
+      else if (state.contextItem.formType === 'job') {
+        const title = document.getElementById('j_title').value;
+        const fId = document.getElementById('j_folder').value;
+        const jobRow = [
+          document.getElementById('j_id').value, fId, title,
+          new Date().toISOString(), document.getElementById('j_head').value, document.getElementById('j_archived').value
+        ];
+        // Detailed notification payload
+        const notifyDetails = { path: getPathString(fId) };
+        await api('/api/jobcards', 'POST', { job: jobRow, steps: builderSteps, notifyDetails });
+      }
+      
+      closeModal('modal-form');
+      tg.HapticFeedback.notificationOccurred('success');
+      await loadData();
     }
 
-    function showToast(msg) {
-       const t = document.getElementById('toast');
-       t.innerText = msg;
-       t.classList.add('show');
-       setTimeout(() => t.classList.remove('show'), 3000);
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+      updateBackButton();
     }
-
-    // Start App
-    initApp();
   </script>
 </body>
 </html>
