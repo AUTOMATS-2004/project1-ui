@@ -1,229 +1,217 @@
-frontend_code_draft = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>TRACE MATRIX</title>
+  <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg-dark: #131314;
       --card-bg: #1e1f20;
       --card-hover: #28292a;
       --border-subtle: #2d2e31;
-      --border-light: #444746;
+      
       --accent-blue: #a8c7fa;
-      --accent-blue-bg: rgba(168,199,250,0.15);
+      --accent-blue-bg: rgba(168, 199, 250, 0.12);
       --accent-teal: #78d9ec;
-      --accent-teal-bg: rgba(120,217,236,0.15);
-      --accent-green: #6dd58c;
-      --accent-green-bg: rgba(109,213,140,0.15);
+      --accent-teal-bg: rgba(120, 217, 236, 0.12);
+      --accent-purple: #d0bcff;
+      --accent-purple-bg: rgba(208, 188, 255, 0.12);
       --accent-amber: #fdd663;
-      --accent-amber-bg: rgba(253,214,99,0.15);
+      --accent-amber-bg: rgba(253, 214, 99, 0.12);
+      --accent-green: #6dd58c;
+      --accent-green-bg: rgba(109, 213, 140, 0.12);
       --accent-red: #f28b82;
-      --accent-red-bg: rgba(242,139,130,0.15);
-      --accent-purple: #d3bbff;
-      --accent-purple-bg: rgba(211,187,255,0.15);
+      --accent-red-bg: rgba(242, 139, 130, 0.12);
+
       --text-primary: #e3e3e3;
       --text-muted: #8e918f;
       --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
-    /* Telegram Native App Header Space: 85px padding at top so UI sits below native Telegram controls */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
     body {
       background: var(--bg-dark);
       color: var(--text-primary);
       font-family: var(--font-main);
       min-height: 100vh;
+      /* 85px top clearance for native Telegram top bar icons & header */
       padding-top: 85px;
       padding-bottom: 90px;
       overflow-x: hidden;
-      user-select: none;
-      -webkit-user-select: none;
     }
 
-    /* Fixed/Sticky Top Navigation Bars */
-    .top-nav-wrapper {
+    /* ----------------------------------------------------
+       STICKY TOP CONTROLS (SEARCH & PRIMARY TABS)
+       ---------------------------------------------------- */
+    .top-sticky-wrapper {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      z-index: 900;
       background: var(--bg-dark);
+      z-index: 900;
       border-bottom: 1px solid var(--border-subtle);
-      padding-top: env(safe-area-inset-top, 0px);
     }
-    
-    .search-bar-container {
-      padding: 10px 14px;
+
+    .search-row {
+      padding: 8px 14px;
       display: flex;
       gap: 8px;
       align-items: center;
       background: var(--bg-dark);
     }
-    
-    .search-input-box {
-      flex: 1;
-      margin-bottom: 0 !important;
-      height: 42px;
-      border-radius: 10px;
-    }
-    
+
     .nav-primary {
       display: flex;
       background: var(--bg-dark);
       border-top: 1px solid var(--border-subtle);
     }
-    
+
     .primary-tab {
       flex: 1;
-      padding: 12px 0;
+      padding: 10px 0;
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      transition: all 0.2s;
     }
+
     .primary-tab.active {
       color: var(--accent-blue);
       border-bottom-color: var(--accent-blue);
-      background: rgba(168,199,250,0.05);
     }
-    
+
+    /* ----------------------------------------------------
+       SUB-NAVIGATIONS & HORIZONTAL CHIP ROWS
+       ---------------------------------------------------- */
+    .sub-filter-bar {
+      position: sticky;
+      top: 96px;
+      z-index: 850;
+      background: #171819;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
     .sub-row {
       display: flex;
       gap: 6px;
       padding: 8px 14px;
-      background: var(--card-bg);
       overflow-x: auto;
       scrollbar-width: none;
-      border-top: 1px solid var(--border-subtle);
     }
     .sub-row::-webkit-scrollbar { display: none; }
-    
+
     .chip-btn {
       font-size: 11px;
       font-weight: 600;
-      padding: 6px 13px;
+      padding: 6px 12px;
       border-radius: 20px;
       background: var(--bg-dark);
       border: 1px solid var(--border-subtle);
-      color: var(--text-primary);
+      color: var(--text-muted);
       white-space: nowrap;
       cursor: pointer;
+      transition: all 0.15s ease;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.15s;
     }
-    .chip-btn:active { transform: scale(0.96); }
+
     .chip-btn.active {
       background: var(--accent-blue-bg);
       color: var(--accent-blue);
       border-color: var(--accent-blue);
     }
 
-    /* Main View Container */
+    /* ----------------------------------------------------
+       VIEWS & CARDS
+       ---------------------------------------------------- */
     .view-content {
+      display: none;
       padding: 14px;
       max-width: 800px;
       margin: 0 auto;
       width: 100%;
-      display: none;
     }
     .view-content.active { display: block; }
-    
-    /* Breadcrumb trail */
-    .breadcrumb-bar {
+
+    .breadcrumbs {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 14px;
-      padding: 8px 12px;
-      background: var(--card-bg);
-      border-radius: 10px;
-      border: 1px solid var(--border-subtle);
+      overflow-x: auto;
       font-size: 12px;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      scrollbar-width: none;
     }
-    .breadcrumb-item {
-      color: var(--accent-blue);
-      cursor: pointer;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .breadcrumb-separator { color: var(--text-muted); font-size: 11px; }
+    .breadcrumbs::-webkit-scrollbar { display: none; }
+    .breadcrumb-item { cursor: pointer; color: var(--accent-blue); }
+    .breadcrumb-item:last-child { color: var(--text-primary); font-weight: 700; cursor: default; }
 
-    /* Cards */
-    .folder-item, .job-card-item {
+    .card-item {
       background: var(--card-bg);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 14px;
-      margin-bottom: 12px;
-      transition: border-color 0.2s;
+      margin-bottom: 10px;
+      transition: border-color 0.15s ease;
+      position: relative;
     }
-    .folder-item:hover, .job-card-item:hover { border-color: var(--border-light); }
-    
-    .item-header {
+    .card-item:active { background: var(--card-hover); }
+
+    .job-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
     }
+
     .job-title-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       flex: 1;
       padding-right: 10px;
     }
+
     .item-title {
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      line-height: 1.3;
     }
+
     .folder-head-badge {
       font-size: 10px;
       color: var(--accent-teal);
-      background: var(--accent-teal-bg);
       font-family: var(--font-mono);
-      padding: 2px 6px;
-      border-radius: 4px;
-      display: inline-block;
-      width: fit-content;
-    }
-    .counter-badge {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--accent-blue);
-      background: var(--accent-blue-bg);
-      padding: 2px 7px;
-      border-radius: 10px;
-      font-family: var(--font-mono);
-    }
-    .toggle-arrow {
-      color: var(--accent-blue);
-      font-weight: bold;
-      font-size: 14px;
-      padding: 4px 8px;
-      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
-    /* Operation Steps */
     .step-list {
       margin-top: 12px;
       display: flex;
@@ -231,84 +219,65 @@ frontend_code_draft = """<!DOCTYPE html>
       gap: 8px;
     }
     .step-list.collapsed { display: none; }
-    
+
     .step-card {
       background: var(--bg-dark);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px;
-      transition: border-color 0.2s;
+      border-radius: 8px;
+      padding: 10px 12px;
     }
+
     .step-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
-      gap: 8px;
     }
+
     .step-title {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
       flex: 1;
+      padding-right: 8px;
     }
 
-    /* Status Pills */
     .badge-status {
       font-size: 10px;
       font-weight: 700;
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       text-transform: uppercase;
       cursor: pointer;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-      transition: transform 0.15s;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      display: inline-block;
     }
-    .badge-status:active { transform: scale(0.94); }
-    .status-notstarted { background: #262729; color: #a8aaad; border: 1px solid #444746; }
+    .status-notstarted { background: #2a2b2d; color: #a1a3a5; border: 1px solid #444; }
     .status-inprogress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
     .status-inhold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
     .status-completed { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-    .step-meta-row {
+    .btn-archive-banner {
+      width: 100%;
+      background: var(--accent-green-bg);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-    .meta-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .meta-notes {
-      margin-top: 6px;
-      font-size: 11px;
-      color: #b0b4b8;
-      background: rgba(255,255,255,0.03);
-      padding: 6px 8px;
-      border-radius: 6px;
-      border-left: 2px solid var(--accent-blue);
-      white-space: pre-wrap;
+      justify-content: center;
+      gap: 6px;
     }
 
-    /* Overdue badge */
-    .badge-overdue {
-      font-size: 9px;
-      font-weight: 800;
-      background: var(--accent-red-bg);
-      color: var(--accent-red);
-      border: 1px solid var(--accent-red);
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-
-    /* Floating Action Button */
+    /* ----------------------------------------------------
+       FLOATING ACTION BUTTON (FAB)
+       ---------------------------------------------------- */
     .fab {
       position: fixed;
       bottom: 24px;
@@ -322,24 +291,25 @@ frontend_code_draft = """<!DOCTYPE html>
       font-size: 26px;
       font-weight: bold;
       cursor: pointer;
-      z-index: 800;
-      box-shadow: 0 4px 18px rgba(168,199,250,0.45);
+      z-index: 700;
+      box-shadow: 0 4px 20px rgba(168, 199, 250, 0.4);
       display: flex;
-      justify-content: center;
       align-items: center;
-      transition: transform 0.2s;
+      justify-content: center;
     }
-    .fab:active { transform: scale(0.92); }
+    .fab:active { transform: scale(0.95); }
 
-    /* Modals & Bottom Drawers */
+    /* ----------------------------------------------------
+       MODALS & SLIDE-UP DRAWERS
+       ---------------------------------------------------- */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(3px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
       z-index: 2000;
       display: flex;
       justify-content: center;
@@ -348,46 +318,35 @@ frontend_code_draft = """<!DOCTYPE html>
       pointer-events: none;
       transition: opacity 0.2s ease;
     }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
     .modal-drawer {
       background: var(--card-bg);
-      border-top: 1px solid var(--border-light);
-      border-radius: 24px 24px 0 0;
+      border-top: 1px solid var(--border-subtle);
+      border-radius: 20px 20px 0 0;
       width: 100%;
-      max-width: 800px;
       max-height: 92vh;
       overflow-y: auto;
-      padding: 20px 18px 30px;
+      padding: 20px 16px 36px 16px;
       transform: translateY(100%);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.7);
+      transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
     }
     .modal-overlay.active .modal-drawer { transform: translateY(0); }
-    .drawer-handle {
-      width: 36px;
-      height: 4px;
-      background: var(--border-light);
-      border-radius: 2px;
-      margin: 0 auto 16px;
-    }
-    
-    .modal-header-row {
+
+    .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
     }
-    .modal-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
+    .modal-title { font-size: 16px; font-weight: 700; }
 
-    /* STRICT FORM INPUT CONSTRAINT:
-       All select, input, textarea MUST have background: #ffffff, color: #000000 */
+    /* ----------------------------------------------------
+       STRICT SHOP FLOOR FORM INPUTS
+       (Strictly #ffffff background with #000000 text)
+       ---------------------------------------------------- */
     .form-label {
       display: block;
       font-size: 11px;
@@ -397,7 +356,7 @@ frontend_code_draft = """<!DOCTYPE html>
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     select.form-select,
     input.form-input,
     textarea.form-textarea {
@@ -406,19 +365,12 @@ frontend_code_draft = """<!DOCTYPE html>
       color: #000000 !important;
       font-weight: 600 !important;
       border: 2px solid var(--accent-blue) !important;
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 12px;
+      border-radius: 8px;
       font-size: 14px;
       margin-bottom: 14px;
       outline: none;
-      box-shadow: none;
-      -webkit-appearance: none;
-      font-family: var(--font-main);
-    }
-    input.form-input::placeholder,
-    textarea.form-textarea::placeholder {
-      color: #666666 !important;
-      font-weight: 500;
+      user-select: text;
     }
     select.form-select option {
       background-color: #ffffff !important;
@@ -434,87 +386,42 @@ frontend_code_draft = """<!DOCTYPE html>
       font-weight: 700;
       font-size: 14px;
       padding: 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background 0.15s;
-    }
-    .btn-action:active { background: #89b4f8; }
-    
-    .btn-archive {
-      width: 100%;
-      background: var(--accent-green);
-      color: #000000;
-      border: none;
-      font-weight: 700;
-      font-size: 13px;
-      padding: 10px;
       border-radius: 8px;
       cursor: pointer;
       margin-top: 10px;
     }
+    .btn-action:active { opacity: 0.9; }
 
-    .btn-cancel {
-      width: 100%;
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border-subtle);
-      font-weight: 600;
-      font-size: 14px;
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    /* Context Menu Actions */
+    /* ----------------------------------------------------
+       CONTEXT MENU ACTIONS
+       ---------------------------------------------------- */
     .context-menu-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-top: 10px;
+      gap: 4px;
     }
-    .context-btn {
-      width: 100%;
-      background: var(--bg-dark);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
+    .context-item {
       padding: 14px 16px;
       font-size: 14px;
       font-weight: 600;
       color: var(--text-primary);
-      text-align: left;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: background 0.15s;
     }
-    .context-btn:active { background: var(--card-hover); }
-    .context-btn-delete {
-      color: var(--accent-red) !important;
-      border-color: rgba(242,139,130,0.3) !important;
-      background: var(--accent-red-bg) !important;
-    }
+    .context-item:active { background: var(--card-hover); }
+    .context-item.danger { color: var(--accent-red); }
 
-    /* Step builder card */
-    .builder-step-card {
-      background: var(--bg-dark);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    /* Loader Overlay */
+    /* ----------------------------------------------------
+       LOADER OVERLAY
+       ---------------------------------------------------- */
     .loader-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(19,19,20,0.85);
-      backdrop-filter: blur(4px);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(19, 19, 20, 0.85);
+      backdrop-filter: blur(6px);
       z-index: 9999;
       display: flex;
       flex-direction: column;
@@ -524,10 +431,7 @@ frontend_code_draft = """<!DOCTYPE html>
       pointer-events: none;
       transition: opacity 0.2s;
     }
-    .loader-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .loader-overlay.active { opacity: 1; pointer-events: auto; }
     .gemini-spinner {
       width: 44px;
       height: 44px;
@@ -535,222 +439,1035 @@ frontend_code_draft = """<!DOCTYPE html>
       border: 4px solid transparent;
       border-top-color: var(--accent-blue);
       border-right-color: var(--accent-purple);
-      border-bottom-color: var(--accent-green);
-      animation: spin 0.9s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+      animation: spin 0.8s linear infinite;
       margin-bottom: 16px;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 16px;
-      color: var(--text-muted);
-      font-size: 13px;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Global Fullscreen Sync Loader -->
+  <!-- Fullscreen Global Loader -->
   <div class="loader-overlay" id="global-loader">
     <div class="gemini-spinner"></div>
-    <div style="font-family:var(--font-mono); color:var(--text-primary); font-size:13px; font-weight:600; letter-spacing:0.5px;">SYNCING WITH MATRIX...</div>
+    <div style="font-family:var(--font-mono); color:var(--text-primary); font-size:13px; font-weight:700; letter-spacing:0.5px;">
+      SYNCHRONIZING TRACE MATRIX...
+    </div>
   </div>
 
-  <!-- Top Sticky Navigation Bar -->
-  <div class="top-nav-wrapper">
-    <div class="search-bar-container">
-      <input type="text" id="global-search-input" class="form-input search-input-box" placeholder="🔍 Search Specs, Jobs, Folders..." oninput="renderAll()" />
+  <!-- Sticky Top Controls: Search Bar & Primary Tabs -->
+  <header class="top-sticky-wrapper">
+    <div class="search-row">
+      <input
+        type="text"
+        id="global-search-input"
+        class="form-input"
+        style="margin-bottom:0; padding:10px 12px; font-size:13px;"
+        placeholder="🔍 Search Specs, Ops, Jobs, Folders..."
+        oninput="handleSearch(this.value)"
+      />
       <button class="chip-btn" onclick="openFilterModal()">⚙️ Filters</button>
     </div>
-
     <nav class="nav-primary">
       <button class="primary-tab active" id="tab-btn-tree" onclick="switchTab('tree')">TREE</button>
       <button class="primary-tab" id="tab-btn-schedule" onclick="switchTab('schedule')">SCHEDULE</button>
       <button class="primary-tab" id="tab-btn-others" onclick="switchTab('others')">OTHERS</button>
     </nav>
+  </header>
 
-    <!-- Contextual Sub-Nav: SCHEDULE Tab (TODAY | DEADLINE | QUEUE) -->
+  <!-- Sticky Sub-Navigators -->
+  <div class="sub-filter-bar">
+    <!-- Schedule Sub-Tab (Contextual) -->
     <div class="sub-row" id="schedule-sub-nav" style="display:none;">
-      <button class="chip-btn active" id="sub-today-btn" onclick="setSubTab('today')">TODAY</button>
-      <button class="chip-btn" id="sub-deadline-btn" onclick="setSubTab('deadline')">DEADLINE</button>
-      <button class="chip-btn" id="sub-queue-btn" onclick="setSubTab('queue')">QUEUE</button>
+      <button class="chip-btn active" onclick="setScheduleSub('today', this)">TODAY</button>
+      <button class="chip-btn" onclick="setScheduleSub('deadline', this)">DEADLINE</button>
+      <button class="chip-btn" onclick="setScheduleSub('queue', this)">QUEUE</button>
     </div>
 
-    <!-- Universal Assignee Filter: ALL | JEEVAN | RAVI KUMAR | SANANTH | UNASSIGNED -->
+    <!-- Universal Assignee Filter -->
     <div class="sub-row" id="assignee-filter-bar">
-      <button class="chip-btn active" onclick="setAssignee('ALL')">ALL</button>
-      <button class="chip-btn" onclick="setAssignee('JEEVAN')">JEEVAN</button>
-      <button class="chip-btn" onclick="setAssignee('RAVI KUMAR')">RAVI KUMAR</button>
-      <button class="chip-btn" onclick="setAssignee('SANANTH')">SANANTH</button>
-      <button class="chip-btn" onclick="setAssignee('UNASSIGNED')">UNASSIGNED</button>
+      <button class="chip-btn active" onclick="setAssignee('ALL', this)">ALL</button>
+      <button class="chip-btn" onclick="setAssignee('JEEVAN', this)">JEEVAN</button>
+      <button class="chip-btn" onclick="setAssignee('RAVI KUMAR', this)">RAVI KUMAR</button>
+      <button class="chip-btn" onclick="setAssignee('SANANTH', this)">SANANTH</button>
+      <button class="chip-btn" onclick="setAssignee('UNASSIGNED', this)">UNASSIGNED</button>
     </div>
   </div>
 
-  <!-- Main Views -->
-  <main>
-    <!-- View 1: TREE -->
-    <div id="page-tree" class="view-content active">
-      <div id="breadcrumb-container" class="breadcrumb-bar"></div>
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <button class="chip-btn" onclick="openNewFolderModal()">+ New Folder</button>
-        <button class="chip-btn" onclick="openJobModal()">+ New Job Card</button>
-      </div>
-      <div id="tree-container"></div>
+  <!-- ====================================================
+       TAB 1: TREE VIEW (Infinite Drilldown)
+       ==================================================== -->
+  <main id="page-tree" class="view-content active">
+    <div class="breadcrumbs" id="tree-breadcrumbs"></div>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <button class="chip-btn" onclick="openFolderPrompt()">+ New Folder</button>
+      <button class="chip-btn" onclick="openJobModal()">+ New Job Card</button>
     </div>
+    <div id="tree-container"></div>
+  </main>
 
-    <!-- View 2: SCHEDULE -->
-    <div id="page-schedule" class="view-content">
-      <div id="schedule-active-container"></div>
-      <div style="margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <h3 style="font-size:13px; font-weight:700; color:var(--accent-green); text-transform:uppercase; letter-spacing:0.5px;">✅ Completed Operations</h3>
-          <span id="completed-count-badge" class="counter-badge">0</span>
-        </div>
-        <div id="schedule-completed-container"></div>
-      </div>
-    </div>
-
-    <!-- View 3: OTHERS -->
-    <div id="page-others" class="view-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <span style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Custom Categories</span>
-        <button class="chip-btn" onclick="openAddCategoryModal()">+ Add Category</button>
-      </div>
-      <div id="others-container"></div>
-      
-      <!-- Static Completed Archive Section -->
-      <div class="folder-item" style="margin-top:24px; border-color:rgba(109,213,140,0.4);" onclick="openCompletedArchiveModal()">
-        <div class="item-header">
-          <div class="job-title-group">
-            <span class="item-title" style="color:var(--accent-green);">📦 COMPLETED ARCHIVE</span>
-            <span style="font-size:11px; color:var(--text-muted);">View and restore archived shop floor job cards</span>
-          </div>
-          <span style="font-size:14px; color:var(--accent-green);">➔</span>
-        </div>
-      </div>
+  <!-- ====================================================
+       TAB 2: SCHEDULE VIEW (Chronological Operations)
+       ==================================================== -->
+  <main id="page-schedule" class="view-content">
+    <div id="schedule-container"></div>
+    <div style="margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:14px;">
+      <h3 style="font-size:13px; color:var(--accent-green); margin-bottom:10px; font-weight:700;">
+        ✅ COMPLETED OPERATIONS
+      </h3>
+      <div id="schedule-completed-container"></div>
     </div>
   </main>
 
-  <!-- Floating Action Button -->
-  <button class="fab" onclick="openJobModal()" title="New Job Card">+</button>
+  <!-- ====================================================
+       TAB 3: OTHERS VIEW (Custom Categories Manager)
+       ==================================================== -->
+  <main id="page-others" class="view-content">
+    <button class="chip-btn" style="margin-bottom:14px;" onclick="addCategoryPrompt()">+ Add Category</button>
+    <div id="others-container"></div>
 
-  <!-- MODAL 1: Job Card Builder Drawer -->
+    <!-- Static Completed Archive -->
+    <div class="card-item" style="margin-top:20px; border-color:var(--accent-green);" onclick="toggleCompletedArchive()">
+      <div class="job-header">
+        <div class="job-title-group">
+          <span class="item-title" style="color:var(--accent-green);">📦 COMPLETED ARCHIVE</span>
+          <span style="font-size:11px; color:var(--text-muted);">Permanently archived manufacturing records</span>
+        </div>
+        <span id="archive-arrow" style="color:var(--accent-green); font-weight:bold;">v</span>
+      </div>
+      <div id="archive-content" class="step-list collapsed"></div>
+    </div>
+  </main>
+
+  <!-- FAB (+) Button -->
+  <button class="fab" onclick="openJobModal()">+</button>
+
+  <!-- ====================================================
+       MODAL 1: JOB CARD BUILDER & FULL EDITOR
+       ==================================================== -->
   <div class="modal-overlay" id="modal-job">
     <div class="modal-drawer">
-      <div class="drawer-handle"></div>
-      <div class="modal-header-row">
+      <div class="modal-header">
         <h3 class="modal-title" id="job-modal-title">Job Card Builder</h3>
-        <button class="chip-btn" onclick="closeAllModals()">✕</button>
+        <button class="chip-btn" onclick="closeModal('modal-job')">✕</button>
       </div>
       <form id="job-form" onsubmit="saveJobCard(event)">
-        <label class="form-label">Job Title *</label>
-        <input type="text" id="job-title" class="form-input" placeholder="e.g., Worm Gear Batch #42" required />
-        
+        <label class="form-label">Job Title</label>
+        <input type="text" id="job-title-input" class="form-input" required placeholder="e.g., Worm Gear Batch #4" />
+
         <label class="form-label">Destination Folder</label>
-        <select id="job-folder" class="form-select"></select>
+        <select id="job-folder-select" class="form-select" onchange="refreshHeadOptions()"></select>
 
-        <label class="form-label">Folder Head Identifier (Tag)</label>
-        <select id="job-head" class="form-select"></select>
+        <label class="form-label">Folder Head Tag (Identifying Parent Folder)</label>
+        <select id="job-head-select" class="form-select"></select>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0 8px;">
-          <label class="form-label" style="margin-bottom:0;">Operations & Steps</label>
-          <button type="button" class="chip-btn" onclick="addBuilderStep()">+ Add Operation</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; margin-bottom:8px;">
+          <label class="form-label" style="margin-bottom:0;">Manufacturing Operations</label>
+          <button type="button" class="chip-btn" onclick="addBuilderStep()">+ Add Step</button>
         </div>
         
-        <div id="job-steps-container"></div>
+        <div id="builder-steps-container"></div>
 
-        <button type="submit" class="btn-action">Save to Matrix</button>
-        <button type="button" class="btn-cancel" onclick="closeAllModals()">Cancel</button>
+        <button type="submit" class="btn-action">Commit to Matrix</button>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 2: Filter & Sort Drawer -->
-  <div class="modal-overlay" id="modal-filter">
-    <div class="modal-drawer">
-      <div class="drawer-handle"></div>
-      <div class="modal-header-row">
-        <h3 class="modal-title">Filter & Sort Scope</h3>
-        <button class="chip-btn" onclick="closeAllModals()">✕</button>
-      </div>
-      <div>
-        <label class="form-label">Sort By</label>
-        <select id="filter-sort-by" class="form-select">
-          <option value="title">Title (Alphabetical)</option>
-          <option value="deadline">Deadline Date</option>
-          <option value="created">Creation Date</option>
-        </select>
-
-        <label class="form-label">Sort Order</label>
-        <select id="filter-sort-order" class="form-select">
-          <option value="asc">Ascending (A-Z / Earliest)</option>
-          <option value="desc">Descending (Z-A / Latest)</option>
-        </select>
-
-        <label class="form-label">Folder Scope</label>
-        <select id="filter-folder-scope" class="form-select">
-          <option value="all">All Folders (Universal Scope)</option>
-        </select>
-
-        <button type="button" class="btn-action" onclick="applyFilterModal()">Apply Filters</button>
-        <button type="button" class="btn-cancel" onclick="resetFilterModal()">Reset to Defaults</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 3: Long-Press Context Menu Drawer -->
+  <!-- ====================================================
+       MODAL 2: CONTEXT MENU (Long-Press / Right-Click Drawer)
+       ==================================================== -->
   <div class="modal-overlay" id="modal-context">
     <div class="modal-drawer">
-      <div class="drawer-handle"></div>
-      <div class="modal-header-row">
-        <div class="job-title-group">
-          <h3 class="modal-title" id="context-item-title">Item Title</h3>
-          <span style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);" id="context-item-type">FOLDER</span>
-        </div>
-        <button class="chip-btn" onclick="closeAllModals()">✕</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="context-title">Item Options</h3>
+        <button class="chip-btn" onclick="closeModal('modal-context')">✕</button>
       </div>
       <div class="context-menu-list">
-        <button class="context-btn" onclick="contextActionEdit()">
+        <div class="context-item" onclick="contextAction('edit')">
           <span>✏️</span> <span>Edit Full / View Details</span>
-        </button>
-        <button class="context-btn" onclick="contextActionOpenLocation()">
+        </div>
+        <div class="context-item" id="context-opt-location" onclick="contextAction('location')">
           <span>📁</span> <span>Open Folder Location</span>
-        </button>
-        <button class="context-btn" onclick="contextActionDuplicate()">
+        </div>
+        <div class="context-item" onclick="contextAction('duplicate')">
           <span>📋</span> <span>Duplicate</span>
-        </button>
-        <button class="context-btn context-btn-delete" onclick="contextActionDelete()">
+        </div>
+        <div class="context-item danger" onclick="contextAction('delete')">
           <span>🗑️</span> <span>Delete Permanently</span>
-        </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 4: Native Searchable Picker Modal (Link to Category) -->
+  <!-- ====================================================
+       MODAL 3: FILTER & SORT MODAL
+       ==================================================== -->
+  <div class="modal-overlay" id="modal-filter">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <h3 class="modal-title">Display & Sort Filters</h3>
+        <button class="chip-btn" onclick="closeModal('modal-filter')">✕</button>
+      </div>
+      <label class="form-label">Sort Direction</label>
+      <select id="filter-sort-direction" class="form-select">
+        <option value="ASC">Ascending (A-Z / Earliest)</option>
+        <option value="DESC">Descending (Z-A / Latest)</option>
+      </select>
+
+      <label class="form-label">Sort By</label>
+      <select id="filter-sort-by" class="form-select">
+        <option value="TITLE">Title / Identifier</option>
+        <option value="DATE">Scheduled Date</option>
+        <option value="DEADLINE">Deadline Urgency</option>
+      </select>
+
+      <label class="form-label">Folder Scope</label>
+      <select id="filter-folder-scope" class="form-select">
+        <option value="ALL">All Folders (Global Matrix)</option>
+        <option value="CURRENT">Current Folder Only</option>
+      </select>
+
+      <button type="button" class="btn-action" onclick="applySortFilters()">Apply Filters</button>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       MODAL 4: CATEGORY ITEM PICKER MODAL
+       ==================================================== -->
   <div class="modal-overlay" id="modal-picker">
     <div class="modal-drawer">
-      <div class="drawer-handle"></div>
-      <div class="modal-header-row">
-        <div>
-          <h3 class="modal-title">Link to Category</h3>
-          <span style="font-size:11px; color:var(--accent-teal);" id="picker-cat-target-name">Target Category</span>
-        </div>
-        <button class="chip-btn" onclick="closeAllModals()">✕</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="picker-title">Link Step to Category</h3>
+        <button class="chip-btn" onclick="closeModal('modal-picker')">✕</button>
       </div>
-      <input type="text" id="picker-search-input" class="form-input" placeholder="🔍 Search Operation or Folder to link..." oninput="renderPickerList()" />
-      <div id="picker-items-container" style="max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+      <input
+        type="text"
+        id="picker-search-input"
+        class="form-input"
+        placeholder="Search operations to link..."
+        oninput="renderPickerItems(this.value)"
+      />
+      <div id="picker-list-container" style="max-height: 50vh; overflow-y: auto;"></div>
     </div>
   </div>
 
-  <!-- MODAL 5: Completed Archive Drawer -->
-  <div class="modal-overlay" id="modal-archive">
-    <div class="modal-drawer">
-      <div class="drawer-handle"></div>
-      <div class="modal-header-row">
-        <h3 class="modal-title">📦 Completed Archive</h3>
-        <button class="chip-btn" onclick="closeAllModals()">✕</button>
-      </div>
-      <div id="archive-list-container"></div>
-    </div>
-  </div>
+  <!-- ====================================================
+       CORE APPLICATION JAVASCRIPT
+       ==================================================== -->
+  <script>
+    // 1. CONFIGURATION & TELEGRAM INITIALIZATION
+    const API_URL = "https://project1-brain.aeijeevan.workers.dev";
+    const tg = window.Telegram?.WebApp;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      if (typeof tg.requestFullscreen === "function") tg.requestFullscreen();
+      tg.setHeaderColor('#131314');
+      tg.setBackgroundColor('#131314');
+
+      // Native Back Button
+      tg.BackButton.onClick(() => handleHardwareBack());
+    }
+
+    // Web Audio Synthesizer
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playChime(type) {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'success') {
+          osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'delete') {
+          osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        }
+      } catch (e) { /* AudioContext suppressed */ }
+    }
+
+    function triggerHaptic(type = 'light') {
+      if (!tg?.HapticFeedback) return;
+      if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+      else if (type === 'error' || type === 'warning') tg.HapticFeedback.notificationOccurred(type);
+      else tg.HapticFeedback.impactOccurred(type);
+    }
+
+    // 2. CENTRAL STATE
+    const state = {
+      tab: 'tree',
+      scheduleSub: 'today',
+      assignee: 'ALL',
+      search: '',
+      currentFolder: 'root',
+      folders: [{ id: 'root', name: 'Root', parentId: null, category: '' }],
+      jobs: [],
+      categories: [
+        { id: 'cat-overdue', name: '🚨 Overdue Operations' },
+        { id: 'cat-urgent', name: '⭐ High Priority / Urgent' }
+      ],
+      sort: { direction: 'ASC', by: 'TITLE', folderScope: 'ALL' },
+      editingJob: null,
+      builderSteps: [],
+      activeContextItem: null,
+      activePickerCatId: null
+    };
+
+    // 3. API BRIDGE WITH STRICT ERROR ALERTS
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      showLoader();
+      try {
+        const userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : "8822239844";
+        const headers = {
+          'Content-Type': 'application/json',
+          'X-Telegram-Init-Data': tg?.initData || '',
+          'X-Telegram-User-Id': userId
+        };
+
+        const config = { method, headers };
+        if (body) config.body = JSON.stringify(body);
+
+        const res = await fetch(`${API_URL}${endpoint}`, config);
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`[HTTP ${res.status}] ${errText}`);
+        }
+        return await res.json();
+      } catch (err) {
+        triggerHaptic('error');
+        alert(`⚠️ Matrix Error:\n${err.message}`);
+        throw err;
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function showLoader() { document.getElementById('global-loader').classList.add('active'); }
+    function hideLoader() { document.getElementById('global-loader').classList.remove('active'); }
+
+    // 4. LIFECYCLE & SYNC
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLive();
+      window.addEventListener('popstate', () => handleHardwareBack());
+    });
+
+    async function fetchLive() {
+      try {
+        const data = await apiRequest(`/api/data?t=${Date.now()}`, 'GET');
+        if (data.folders && data.folders.length > 0) {
+          state.folders = [{ id: 'root', name: 'Root', parentId: null, category: '' }, ...data.folders];
+        }
+        if (data.jobCards) {
+          state.jobs = data.jobCards;
+        }
+        renderAll();
+      } catch (err) {
+        console.error("Live sync failed", err);
+      }
+    }
+
+    // 5. HARDWARE BACK BUTTON & NAVIGATION
+    function updateBackButtonVisibility() {
+      const modalOpen = document.querySelector('.modal-overlay.active');
+      const isSubFolder = state.currentFolder !== 'root';
+      if (modalOpen || isSubFolder) {
+        tg?.BackButton?.show();
+      } else {
+        tg?.BackButton?.hide();
+      }
+    }
+
+    function handleHardwareBack() {
+      const activeModal = document.querySelector('.modal-overlay.active');
+      if (activeModal) {
+        closeModal(activeModal.id);
+        return;
+      }
+      if (state.tab === 'tree' && state.currentFolder !== 'root') {
+        const cur = state.folders.find(f => f.id === state.currentFolder);
+        state.currentFolder = cur?.parentId || 'root';
+        renderAll();
+      }
+    }
+
+    // 6. TABS & CONTROLS
+    function switchTab(tabId) {
+      triggerHaptic('light');
+      state.tab = tabId;
+      document.querySelectorAll('.primary-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+
+      document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+      document.getElementById(`page-${tabId}`).classList.add('active');
+      document.getElementById('schedule-sub-nav').style.display = tabId === 'schedule' ? 'flex' : 'none';
+
+      renderAll();
+    }
+
+    function setScheduleSub(sub, el) {
+      triggerHaptic('light');
+      state.scheduleSub = sub;
+      document.querySelectorAll('#schedule-sub-nav .chip-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderSchedule();
+    }
+
+    function setAssignee(assignee, el) {
+      triggerHaptic('light');
+      state.assignee = assignee;
+      document.querySelectorAll('#assignee-filter-bar .chip-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderAll();
+    }
+
+    function handleSearch(val) {
+      state.search = val.toLowerCase().trim();
+      renderAll();
+    }
+
+    // 7. CASCADE RENDERER
+    function renderAll() {
+      updateBackButtonVisibility();
+      renderTree();
+      renderSchedule();
+      renderOthers();
+    }
+
+    // ----------------------------------------------------
+    // TREE TAB ENGINE
+    // ----------------------------------------------------
+    function renderTree() {
+      const container = document.getElementById('tree-container');
+      const breadcrumbBox = document.getElementById('tree-breadcrumbs');
+      container.innerHTML = '';
+      breadcrumbBox.innerHTML = '';
+
+      // Breadcrumbs
+      const path = getFolderPath(state.currentFolder);
+      breadcrumbBox.innerHTML = path.map((f, i) => `
+        <span class="breadcrumb-item" onclick="navigateToFolder('${f.id}')">${f.name}</span>
+        ${i < path.length - 1 ? '<span style="color:#555;">➔</span>' : ''}
+      `).join('');
+
+      let subFolders = state.folders.filter(f => f.parentId === state.currentFolder && f.id !== 'root');
+      let subJobs = state.jobs.filter(j => j.folderId === state.currentFolder && !j.isArchived);
+
+      // Deep Search override
+      if (state.search) {
+        subFolders = state.folders.filter(f => f.id !== 'root' && f.name.toLowerCase().includes(state.search));
+        subJobs = state.jobs.filter(j => !j.isArchived && (
+          j.title.toLowerCase().includes(state.search) ||
+          j.steps.some(s => s.title.toLowerCase().includes(state.search) || s.notes.toLowerCase().includes(state.search))
+        ));
+      }
+
+      // Sort Jobs
+      subJobs.sort((a, b) => {
+        if (state.sort.by === 'TITLE') {
+          return state.sort.direction === 'ASC' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+        }
+        return 0;
+      });
+
+      // Render Folders
+      subFolders.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = `
+          <div class="job-header">
+            <span style="font-weight:700; font-size:14px;">📁 ${f.name}</span>
+            <span style="color:var(--text-muted); font-size:12px;">➔</span>
+          </div>`;
+        attachLongPress(div, () => openContextMenu('folder', f));
+        div.onclick = (e) => {
+          if (e.defaultPrevented) return;
+          navigateToFolder(f.id);
+        };
+        container.appendChild(div);
+      });
+
+      // Render Job Cards
+      subJobs.forEach(job => {
+        // Auto-sorting operations: Completed to bottom
+        const sortedSteps = [...job.steps].sort((a, b) => (a.status === 'Completed') - (b.status === 'Completed'));
+        const allCompleted = sortedSteps.length > 0 && sortedSteps.every(s => s.status === 'Completed');
+        const headFolder = job.folderHeadId ? state.folders.find(f => f.id === job.folderHeadId) : null;
+
+        const card = document.createElement('div');
+        card.className = 'card-item';
+        attachLongPress(card, () => openContextMenu('job', job));
+
+        card.innerHTML = `
+          <div class="job-header" onclick="toggleExpand('job-${job.id}')">
+            <div class="job-title-group">
+              <span class="item-title">⚙️ ${job.title}</span>
+              ${headFolder ? `<span class="folder-head-badge">HEAD: ${headFolder.name}</span>` : ''}
+            </div>
+            <span id="arrow-job-${job.id}" style="color:var(--accent-blue); font-weight:bold; font-size:14px;">v</span>
+          </div>
+          ${allCompleted ? `
+            <button class="btn-archive-banner" onclick="event.stopPropagation(); archiveJob('${job.id}')">
+              📦 All Steps Completed — Archive Job Card
+            </button>` : ''}
+          <div class="step-list" id="steps-job-${job.id}">
+            ${sortedSteps.map(s => renderStepItem(s, job)).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      if (subFolders.length === 0 && subJobs.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">No items in this directory.</div>`;
+      }
+    }
+
+    function navigateToFolder(id) {
+      triggerHaptic('light');
+      state.currentFolder = id;
+      renderAll();
+    }
+
+    function getFolderPath(folderId) {
+      const p = [];
+      let cur = state.folders.find(f => f.id === folderId);
+      while (cur) {
+        p.unshift(cur);
+        cur = state.folders.find(f => f.id === cur.parentId);
+      }
+      return p.length ? p : [{ id: 'root', name: 'Root' }];
+    }
+
+    // ----------------------------------------------------
+    // SCHEDULE TAB ENGINE
+    // ----------------------------------------------------
+    function renderSchedule() {
+      const container = document.getElementById('schedule-container');
+      const compContainer = document.getElementById('schedule-completed-container');
+      container.innerHTML = '';
+      compContainer.innerHTML = '';
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const activeOps = [];
+      const completedOps = [];
+
+      state.jobs.filter(j => !j.isArchived).forEach(job => {
+        job.steps.forEach(step => {
+          if (state.assignee !== 'ALL' && step.assignee !== state.assignee) return;
+          if (state.search && !step.title.toLowerCase().includes(state.search) && !job.title.toLowerCase().includes(state.search)) return;
+
+          if (step.status === 'Completed') {
+            completedOps.push({ step, job });
+          } else {
+            if (state.scheduleSub === 'today') {
+              if (step.date === todayStr) activeOps.push({ step, job });
+            } else if (state.scheduleSub === 'deadline') {
+              if (step.date) activeOps.push({ step, job });
+            } else { // queue
+              activeOps.push({ step, job });
+            }
+          }
+        });
+      });
+
+      // Sort Deadlines chronologically
+      if (state.scheduleSub === 'deadline') {
+        activeOps.sort((a, b) => (a.step.date + (a.step.time || '')) > (b.step.date + (b.step.time || '')) ? 1 : -1);
+      }
+
+      activeOps.forEach(({ step, job }) => {
+        container.appendChild(createScheduleStepCard(step, job));
+      });
+
+      completedOps.forEach(({ step, job }) => {
+        compContainer.appendChild(createScheduleStepCard(step, job));
+      });
+
+      if (activeOps.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">No operations matching this schedule filter.</div>`;
+      }
+    }
+
+    function createScheduleStepCard(step, job) {
+      const headName = job.folderHeadId ? state.folders.find(f => f.id === job.folderHeadId)?.name : '';
+      const div = document.createElement('div');
+      div.className = 'card-item';
+      attachLongPress(div, () => openContextMenu('step', step, job));
+
+      div.innerHTML = `
+        <div style="font-size:11px; color:var(--accent-purple); margin-bottom:6px; display:flex; justify-content:space-between; font-weight:700;">
+          <span>JOB: ${job.title}</span>
+          ${headName ? `<span style="color:var(--accent-teal);">HEAD: ${headName}</span>` : ''}
+        </div>
+        ${renderStepItem(step, job)}
+      `;
+      return div;
+    }
+
+    // ----------------------------------------------------
+    // OTHERS TAB ENGINE (Custom Categories)
+    // ----------------------------------------------------
+    function renderOthers() {
+      const container = document.getElementById('others-container');
+      container.innerHTML = '';
+
+      state.categories.forEach(cat => {
+        const catFolders = state.folders.filter(f => f.category === cat.id);
+        const catSteps = [];
+        state.jobs.forEach(j => j.steps.filter(s => s.category === cat.id).forEach(s => catSteps.push({ step: s, job: j })));
+
+        const div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = `
+          <div class="job-header" onclick="toggleExpand('cat-${cat.id}')">
+            <span class="item-title">${cat.name}</span>
+            <span id="arrow-cat-${cat.id}" style="color:var(--accent-blue); font-weight:bold;">v</span>
+          </div>
+          <div class="step-list" id="steps-cat-${cat.id}">
+            ${catFolders.map(f => `<div class="card-item" onclick="navigateToFolder('${f.id}')">📁 ${f.name}</div>`).join('')}
+            ${catSteps.map(cs => renderStepItem(cs.step, cs.job)).join('')}
+            <button class="chip-btn" style="margin-top:8px;" onclick="openCategoryPicker('${cat.id}')">+ Link Operation</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function toggleCompletedArchive() {
+      const el = document.getElementById('archive-content');
+      const arrow = document.getElementById('archive-arrow');
+      if (el.classList.contains('collapsed')) {
+        el.classList.remove('collapsed');
+        arrow.innerText = '^';
+        renderArchiveContent();
+      } else {
+        el.classList.add('collapsed');
+        arrow.innerText = 'v';
+      }
+    }
+
+    function renderArchiveContent() {
+      const el = document.getElementById('archive-content');
+      const archivedJobs = state.jobs.filter(j => j.isArchived);
+      if (archivedJobs.length === 0) {
+        el.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:10px;">Archive is empty.</div>';
+        return;
+      }
+      el.innerHTML = archivedJobs.map(j => `
+        <div class="step-card">
+          <div style="font-weight:700; font-size:13px; color:var(--accent-green);">📦 ${j.title}</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Operations: ${j.steps.length} completed</div>
+        </div>
+      `).join('');
+    }
+
+    // ----------------------------------------------------
+    // STEP COMPONENT & FORWARD-ONLY CYCLE
+    // ----------------------------------------------------
+    function renderStepItem(step, job) {
+      if (state.assignee !== 'ALL' && step.assignee !== state.assignee) return '';
+      const sc = `status-${step.status.toLowerCase().replace(/\s/g, '')}`;
+      return `
+        <div class="step-card">
+          <div class="step-header">
+            <span class="step-title">${step.title}</span>
+            <span class="badge-status ${sc}" onclick="cycleStepForward('${step.id}')">${step.status}</span>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:11px; color:var(--text-muted); margin-top:4px;">
+            <span style="color:var(--accent-teal); font-weight:600;">👤 ${step.assignee}</span>
+            ${step.date ? `<span>📅 ${step.date} ${step.time || ''}</span>` : ''}
+            ${step.attachmentUrl ? `<a href="${step.attachmentUrl}" target="_blank" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">📎 File</a>` : ''}
+          </div>
+          ${step.notes ? `<div style="font-size:11px; color:#aaa; margin-top:4px; font-style:italic;">"${step.notes}"</div>` : ''}
+        </div>
+      `;
+    }
+
+    async function cycleStepForward(stepId) {
+      triggerHaptic('medium');
+      const sequence = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
+      let targetStep = null;
+
+      for (const j of state.jobs) {
+        const s = j.steps.find(st => st.id === stepId);
+        if (s) {
+          const nextIdx = (sequence.indexOf(s.status) + 1) % sequence.length;
+          s.status = sequence[nextIdx];
+          targetStep = s;
+          break;
+        }
+      }
+
+      if (targetStep) {
+        renderAll();
+        playChime('success');
+        await apiRequest('/api/steps', 'PATCH', { stepId: targetStep.id, status: targetStep.status });
+      }
+    }
+
+    function toggleExpand(id) {
+      const list = document.getElementById(`steps-${id}`);
+      const arrow = document.getElementById(`arrow-${id}`);
+      if (!list) return;
+      if (list.classList.contains('collapsed')) {
+        list.classList.remove('collapsed');
+        if (arrow) arrow.innerText = '^';
+      } else {
+        list.classList.add('collapsed');
+        if (arrow) arrow.innerText = 'v';
+      }
+    }
+
+    // ----------------------------------------------------
+    // CONTEXT MENU & LONG PRESS IMPLEMENTATION
+    // ----------------------------------------------------
+    function attachLongPress(element, callback) {
+      let pressTimer = null;
+
+      function startPress(e) {
+        pressTimer = setTimeout(() => {
+          triggerHaptic('heavy');
+          callback();
+        }, 550);
+      }
+
+      function cancelPress() {
+        if (pressTimer) clearTimeout(pressTimer);
+      }
+
+      element.addEventListener('touchstart', startPress, { passive: true });
+      element.addEventListener('touchend', cancelPress);
+      element.addEventListener('touchmove', cancelPress);
+
+      // Desktop Context Menu (Right Click)
+      element.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        callback();
+      });
+    }
+
+    function openContextMenu(type, item, parentJob = null) {
+      state.activeContextItem = { type, item, parentJob };
+      document.getElementById('context-title').innerText = item.title || item.name || 'Item Options';
+      
+      const locOpt = document.getElementById('context-opt-location');
+      locOpt.style.display = (type === 'folder' || type === 'job') ? 'flex' : 'none';
+
+      openModal('modal-context');
+    }
+
+    async function contextAction(action) {
+      const { type, item, parentJob } = state.activeContextItem;
+      closeModal('modal-context');
+
+      if (action === 'edit') {
+        if (type === 'job') openJobModal(item.id);
+        else if (type === 'step') openJobModal(parentJob.id);
+        else if (type === 'folder') openFolderPrompt(item);
+      } else if (action === 'location') {
+        const folderId = type === 'job' ? item.folderId : item.parentId;
+        switchTab('tree');
+        navigateToFolder(folderId || 'root');
+      } else if (action === 'duplicate') {
+        duplicateItem(type, item, parentJob);
+      } else if (action === 'delete') {
+        deleteItem(type, item.id);
+      }
+    }
+
+    async function duplicateItem(type, item, parentJob) {
+      if (type === 'job') {
+        const clonedSteps = item.steps.map(s => ({ ...s, id: '' }));
+        await apiRequest('/api/jobcards', 'POST', {
+          title: `${item.title} (Copy)`,
+          folderId: item.folderId,
+          folderHeadId: item.folderHeadId,
+          steps: clonedSteps
+        });
+      } else if (type === 'folder') {
+        await apiRequest('/api/folders', 'POST', {
+          name: `${item.name} (Copy)`,
+          parentId: item.parentId,
+          category: item.category
+        });
+      }
+      playChime('success');
+      await fetchLive();
+    }
+
+    async function deleteItem(type, id) {
+      if (!confirm(`Are you sure you want to permanently delete this ${type}? This action cascades and clears all nested items.`)) return;
+      playChime('delete');
+      triggerHaptic('warning');
+      await apiRequest('/api/delete', 'POST', { type, ids: [id] });
+      await fetchLive();
+    }
+
+    async function archiveJob(jobId) {
+      if (!confirm("Move this completed Job Card to the permanent Archive?")) return;
+      playChime('success');
+      triggerHaptic('success');
+      await apiRequest('/api/archive', 'POST', { jobId });
+      await fetchLive();
+    }
+
+    // ----------------------------------------------------
+    // JOB BUILDER MODAL & DRIVE FILE UPLOADER
+    // ----------------------------------------------------
+    function openJobModal(jobId = null) {
+      state.editingJob = jobId ? state.jobs.find(j => j.id === jobId) : null;
+      document.getElementById('job-modal-title').innerText = state.editingJob ? "Edit Job Card" : "New Job Card";
+      document.getElementById('job-title-input').value = state.editingJob ? state.editingJob.title : '';
+
+      // Populate Folder Select
+      const folderSelect = document.getElementById('job-folder-select');
+      folderSelect.innerHTML = state.folders.map(f => `
+        <option value="${f.id}" ${state.editingJob ? (state.editingJob.folderId === f.id ? 'selected' : '') : (state.currentFolder === f.id ? 'selected' : '')}>
+          ${f.name}
+        </option>
+      `).join('');
+
+      refreshHeadOptions();
+
+      // Populate Steps
+      state.builderSteps = state.editingJob ? JSON.parse(JSON.stringify(state.editingJob.steps)) : [];
+      if (state.builderSteps.length === 0) addBuilderStep();
+      else renderBuilderSteps();
+
+      openModal('modal-job');
+    }
+
+    function refreshHeadOptions() {
+      const headSelect = document.getElementById('job-head-select');
+      headSelect.innerHTML = '<option value="">None</option>';
+      const currentSelectedFolder = document.getElementById('job-folder-select').value;
+      const path = getFolderPath(currentSelectedFolder);
+
+      path.forEach(f => {
+        if (f.id !== 'root') {
+          headSelect.innerHTML += `<option value="${f.id}" ${state.editingJob && state.editingJob.folderHeadId === f.id ? 'selected' : ''}>${f.name}</option>`;
+        }
+      });
+    }
+
+    function addBuilderStep() {
+      state.builderSteps.push({
+        id: '',
+        title: '',
+        assignee: 'UNASSIGNED',
+        status: 'Not Started',
+        date: '',
+        time: '',
+        attachmentUrl: '',
+        linkedJob: '',
+        notes: '',
+        category: ''
+      });
+      renderBuilderSteps();
+    }
+
+    function removeBuilderStep(index) {
+      state.builderSteps.splice(index, 1);
+      renderBuilderSteps();
+    }
+
+    function renderBuilderSteps() {
+      const container = document.getElementById('builder-steps-container');
+      container.innerHTML = state.builderSteps.map((step, idx) => `
+        <div class="step-card" style="margin-bottom:12px; border-color:var(--accent-blue);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:11px; font-weight:700; color:var(--accent-blue); font-family:var(--font-mono);">OPERATION #${idx + 1}</span>
+            <span style="color:var(--accent-red); cursor:pointer; font-weight:bold; font-size:14px;" onclick="removeBuilderStep(${idx})">✕</span>
+          </div>
+          
+          <input type="text" class="form-input" placeholder="Operation Title (e.g., CNC Turning)" value="${step.title}" oninput="state.builderSteps[${idx}].title=this.value" required />
+
+          <div style="display:flex; gap:8px;">
+            <select class="form-select" onchange="state.builderSteps[${idx}].assignee=this.value">
+              <option value="UNASSIGNED" ${step.assignee === 'UNASSIGNED' ? 'selected' : ''}>UNASSIGNED</option>
+              <option value="JEEVAN" ${step.assignee === 'JEEVAN' ? 'selected' : ''}>JEEVAN</option>
+              <option value="RAVI KUMAR" ${step.assignee === 'RAVI KUMAR' ? 'selected' : ''}>RAVI KUMAR</option>
+              <option value="SANANTH" ${step.assignee === 'SANANTH' ? 'selected' : ''}>SANANTH</option>
+              <option value="ALL" ${step.assignee === 'ALL' ? 'selected' : ''}>ALL</option>
+            </select>
+
+            <select class="form-select" onchange="state.builderSteps[${idx}].status=this.value">
+              <option value="Not Started" ${step.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+              <option value="In Progress" ${step.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="In Hold" ${step.status === 'In Hold' ? 'selected' : ''}>In Hold</option>
+              <option value="Completed" ${step.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <input type="date" class="form-input" value="${step.date}" onchange="state.builderSteps[${idx}].date=this.value" />
+            <input type="time" class="form-input" value="${step.time}" onchange="state.builderSteps[${idx}].time=this.value" />
+          </div>
+
+          <textarea class="form-textarea" placeholder="Manufacturing Specs / Notes" rows="2" oninput="state.builderSteps[${idx}].notes=this.value">${step.notes}</textarea>
+
+          <div style="margin-top:-6px;">
+            <label class="form-label">Attachment (Upload to Google Drive)</label>
+            <input type="file" class="form-input" onchange="handleFileUpload(event, ${idx})" />
+            ${step.attachmentUrl ? `<div style="font-size:11px; margin-top:-8px; margin-bottom:8px;"><a href="${step.attachmentUrl}" target="_blank" style="color:var(--accent-blue);">View Attached File ↗</a></div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleFileUpload(e, stepIndex) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result.split(',')[1];
+        const payload = {
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data,
+          folderPath: ["TRACE_MATRIX", document.getElementById('job-title-input').value || "UNSORTED"]
+        };
+
+        try {
+          const res = await apiRequest('/api/upload-drive-file', 'POST', payload);
+          state.builderSteps[stepIndex].attachmentUrl = res.fileUrl;
+          renderBuilderSteps();
+          playChime('success');
+        } catch (err) {
+          alert("File upload to Drive failed: " + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveJobCard(e) {
+      e.preventDefault();
+      const payload = {
+        jobId: state.editingJob ? state.editingJob.id : null,
+        title: document.getElementById('job-title-input').value,
+        folderId: document.getElementById('job-folder-select').value,
+        folderHeadId: document.getElementById('job-head-select').value,
+        steps: state.builderSteps
+      };
+
+      await apiRequest('/api/jobcards', 'POST', payload);
+      playChime('success');
+      closeModal('modal-job');
+      await fetchLive();
+    }
+
+    // ----------------------------------------------------
+    // FOLDER MODAL & CATEGORY PROMPTS
+    // ----------------------------------------------------
+    function openFolderPrompt(editingFolder = null) {
+      const name = prompt("Enter Folder Name:", editingFolder ? editingFolder.name : "");
+      if (!name) return;
+
+      apiRequest('/api/folders', 'POST', {
+        id: editingFolder ? editingFolder.id : null,
+        name,
+        parentId: editingFolder ? editingFolder.parentId : state.currentFolder
+      }).then(() => {
+        playChime('success');
+        fetchLive();
+      });
+    }
+
+    function addCategoryPrompt() {
+      const name = prompt("Enter New Category Name (e.g., ⚡ Calibration):");
+      if (!name) return;
+      state.categories.push({ id: `cat-${Date.now()}`, name });
+      renderOthers();
+    }
+
+    // ----------------------------------------------------
+    // CATEGORY PICKER ENGINE
+    // ----------------------------------------------------
+    function openCategoryPicker(catId) {
+      state.activePickerCatId = catId;
+      document.getElementById('picker-search-input').value = '';
+      renderPickerItems('');
+      openModal('modal-picker');
+    }
+
+    function renderPickerItems(query) {
+      const container = document.getElementById('picker-list-container');
+      const q = query.toLowerCase();
+      const items = [];
+
+      state.jobs.forEach(j => {
+        j.steps.forEach(s => {
+          if (!q || s.title.toLowerCase().includes(q) || j.title.toLowerCase().includes(q)) {
+            items.push({ step: s, job: j });
+          }
+        });
+      });
+
+      container.innerHTML = items.map(({ step, job }) => `
+        <div class="card-item" style="cursor:pointer;" onclick="linkStepToCategory('${step.id}')">
+          <div style="font-weight:700; font-size:13px;">${step.title}</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Job: ${job.title}</div>
+        </div>
+      `).join('');
+
+      if (items.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted);">No steps found.</div>`;
+      }
+    }
+
+    async function linkStepToCategory(stepId) {
+      closeModal('modal-picker');
+      await apiRequest('/api/steps', 'PATCH', { stepId, category: state.activePickerCatId });
+      playChime('success');
+      await fetchLive();
+    }
+
+    // ----------------------------------------------------
+    // FILTER MODAL
+    // ----------------------------------------------------
+    function openFilterModal() {
+      document.getElementById('filter-sort-direction').value = state.sort.direction;
+      document.getElementById('filter-sort-by').value = state.sort.by;
+      document.getElementById('filter-folder-scope').value = state.sort.folderScope;
+      openModal('modal-filter');
+    }
+
+    function applySortFilters() {
+      state.sort.direction = document.getElementById('filter-sort-direction').value;
+      state.sort.by = document.getElementById('filter-sort-by').value;
+      state.sort.folderScope = document.getElementById('filter-folder-scope').value;
+      closeModal('modal-filter');
+      renderAll();
+    }
+
+    // ----------------------------------------------------
+    // GENERAL MODAL ENGINE
+    // ----------------------------------------------------
+    function openModal(id) {
+      triggerHaptic('light');
+      document.getElementById(id).classList.add('active');
+      updateBackButtonVisibility();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      updateBackButtonVisibility();
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+      updateBackButtonVisibility();
+    }
+  </script>
+</body>
+</html>
