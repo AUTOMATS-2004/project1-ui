@@ -8,10 +8,6 @@
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
-  <!-- Mobile DevTools (Eruda) for live inspection inside Telegram -->
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>try { eruda.init(); } catch(e) {}</script>
-
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,3 +30,1050 @@
       --accent-green: #6dd58c;
       --accent-green-bg: rgba(109, 213, 140, 0.12);
       --accent-red: #f28b82;
+
+      --text-primary: #e3e3e3;
+      --text-muted: #8e918f;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    /* FLEXBOX FULL-HEIGHT LAYOUT (Eliminates layout collapses & guessing body padding) */
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ----------------------------------------------------
+       TOP PINNED CONTROLS AREA
+       ---------------------------------------------------- */
+    .top-bar-area {
+      flex-shrink: 0;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Line 0: Diagnostics (Hidden by default) */
+    .diagnostic-bar {
+      background: #171819;
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      display: none; /* Toggled */
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--accent-amber);
+    }
+
+    /* Line 1: Search + Filters + Line 0 Toggle */
+    .search-row {
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .search-input-box {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* Line 2: Nav Tabs + Assignee Toggle */
+    .nav-primary-row {
+      display: flex;
+      align-items: center;
+      border-top: 1px solid var(--border-subtle);
+      padding-right: 8px;
+    }
+
+    .nav-primary {
+      flex: 1;
+      display: flex;
+    }
+
+    .primary-tab {
+      flex: 1;
+      padding: 10px 0;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .primary-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+
+    /* Line 3: Assignee Sub-Row */
+    .sub-filter-bar {
+      background: #171819;
+      border-top: 1px solid var(--border-subtle);
+      display: block; /* Toggled */
+    }
+
+    /* Line 4: Schedule Sub-Row */
+    .schedule-sub-bar {
+      background: #1e1f20;
+      border-top: 1px solid var(--border-subtle);
+      display: none; /* Contextual */
+      align-items: center;
+      padding-right: 8px;
+    }
+
+    .sub-row {
+      display: flex;
+      gap: 6px;
+      padding: 7px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1;
+    }
+    .sub-row::-webkit-scrollbar { display: none; }
+
+    /* Right-Side Toggle Button */
+    .toggle-arrow-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      color: var(--accent-blue);
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle-arrow-btn:active { background: var(--card-hover); }
+
+    .chip-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .chip-btn.active {
+      background: var(--accent-blue-bg);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    /* ----------------------------------------------------
+       SCROLLABLE MAIN CONTENT AREA
+       ---------------------------------------------------- */
+    .main-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px;
+      padding-bottom: 90px;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .view-content { display: none; }
+    .view-content.active { display: block; }
+
+    .breadcrumbs {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .breadcrumb-item { cursor: pointer; color: var(--accent-blue); }
+
+    .card-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .card-item:active { background: var(--card-hover); }
+
+    .job-header { display: flex; justify-content: space-between; align-items: center; }
+    .item-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+
+    .step-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .step-list.collapsed { display: none; }
+    .step-card { background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; }
+
+    .badge-status {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+    .status-notstarted { background: #2a2b2d; color: #a1a3a5; border: 1px solid #444; }
+    .status-inprogress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+    .status-inhold { background: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+    .status-completed { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid var(--accent-green); }
+
+    /* FAB Button in Bottom Right */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      color: #000;
+      border: none;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 700;
+      box-shadow: 0 4px 20px rgba(168, 199, 250, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab:active { transform: scale(0.95); }
+
+    /* ERUDA ISOLATED TO BOTTOM LEFT ONLY */
+    #eruda { display: none; }
+    #eruda .eruda-entry-btn {
+      left: 16px !important;
+      right: auto !important;
+      bottom: 24px !important;
+      z-index: 600 !important;
+    }
+
+    /* MODAL SHEETS */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-drawer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-subtle);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px 16px 36px 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* STRICT HIGH CONTRAST INPUTS */
+    .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    select.form-select, input.form-input, textarea.form-textarea {
+      width: 100%;
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+      border: 2px solid var(--accent-blue) !important;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .btn-action {
+      width: 100%;
+      background: var(--accent-blue);
+      color: #000000;
+      border: none;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      top: 10px; left: 10px; right: 10px;
+      background: var(--accent-blue);
+      color: #000;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 999999;
+      display: none;
+    }
+    .toast.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast-banner"></div>
+
+  <!-- 1. TOP PINNED CONTROLS -->
+  <header class="top-bar-area">
+    <!-- Line 0: Diagnostics & Eruda (Hidden by default) -->
+    <div class="diagnostic-bar" id="line-diag">
+      <span id="diag-user">TG USER: INITIALIZING...</span>
+      <span id="diag-status">STATUS: CONNECTING</span>
+      <button class="chip-btn" style="padding:2px 8px; font-size:9px;" onclick="clearErudaHighlight()">🧹 Clear Tint</button>
+    </div>
+
+    <!-- Line 1: Search + Filters + Line 0 Toggle -->
+    <div class="search-row">
+      <div class="search-input-box">
+        <input
+          type="text"
+          id="global-search-input"
+          class="form-input"
+          style="margin-bottom:0; padding:8px 12px; font-size:13px;"
+          placeholder="🔍 Search Specs, Ops, Jobs..."
+          oninput="handleSearch(this.value)"
+        />
+        <span id="search-clear-btn" class="search-clear" style="display:none;" onclick="clearSearch()">✕</span>
+      </div>
+      <button class="chip-btn" onclick="openFilterModal()">⚙️ Filters</button>
+      <button class="toggle-arrow-btn" id="toggle-btn-diag" onclick="toggleDiagnostics()" title="Toggle Dev/Status">▾</button>
+    </div>
+
+    <!-- Line 2: Nav Tabs + Assignee Toggle -->
+    <div class="nav-primary-row">
+      <nav class="nav-primary">
+        <button class="primary-tab active" id="tab-btn-tree" onclick="switchTab('tree')">TREE</button>
+        <button class="primary-tab" id="tab-btn-schedule" onclick="switchTab('schedule')">SCHEDULE</button>
+        <button class="primary-tab" id="tab-btn-others" onclick="switchTab('others')">OTHERS</button>
+      </nav>
+      <button class="toggle-arrow-btn" id="toggle-btn-assignee" onclick="toggleAssigneeRow()" title="Toggle Assignee Filter">▾</button>
+    </div>
+
+    <!-- Line 3: Assignee Sub-Row -->
+    <div class="sub-filter-bar" id="line-assignee">
+      <div class="sub-row">
+        <button class="chip-btn active" onclick="setAssignee('ALL', this)">ALL</button>
+        <button class="chip-btn" onclick="setAssignee('JEEVAN', this)">JEEVAN</button>
+        <button class="chip-btn" onclick="setAssignee('RAVI KUMAR', this)">RAVI KUMAR</button>
+        <button class="chip-btn" onclick="setAssignee('SANANTH', this)">SANANTH</button>
+        <button class="chip-btn" onclick="setAssignee('UNASSIGNED', this)">UNASSIGNED</button>
+      </div>
+    </div>
+
+    <!-- Line 4: Schedule Sub-Row -->
+    <div class="schedule-sub-bar" id="line-schedule-sub">
+      <div class="sub-row" id="schedule-sub-chips">
+        <button class="chip-btn active" onclick="setScheduleSub('today', this)">TODAY</button>
+        <button class="chip-btn" onclick="setScheduleSub('deadline', this)">DEADLINE</button>
+        <button class="chip-btn" onclick="setScheduleSub('queue', this)">QUEUE</button>
+      </div>
+      <button class="toggle-arrow-btn" id="toggle-btn-sched" onclick="toggleScheduleChips()" title="Toggle Schedule Chips">▾</button>
+    </div>
+  </header>
+
+  <!-- 2. SCROLLABLE CONTENT AREA -->
+  <div class="main-scroll-area">
+    <!-- TAB 1: TREE -->
+    <main id="page-tree" class="view-content active">
+      <div class="breadcrumbs" id="tree-breadcrumbs"></div>
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <button class="chip-btn" onclick="openFolderModal()">+ New Folder</button>
+        <button class="chip-btn" onclick="openJobModal()">+ New Job Card</button>
+      </div>
+      <div id="tree-container"></div>
+    </main>
+
+    <!-- TAB 2: SCHEDULE -->
+    <main id="page-schedule" class="view-content">
+      <div id="schedule-container"></div>
+    </main>
+
+    <!-- TAB 3: OTHERS -->
+    <main id="page-others" class="view-content">
+      <button class="chip-btn" style="margin-bottom:14px;" onclick="openCategoryModal()">+ Add Category</button>
+      <div id="others-container"></div>
+    </main>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openJobModal()">+</button>
+
+  <!-- MODAL: JOB BUILDER -->
+  <div class="modal-overlay" id="modal-job">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <h3 id="job-modal-title" style="font-size:16px;">Job Card Builder</h3>
+        <button class="chip-btn" onclick="closeModal('modal-job')">✕</button>
+      </div>
+      <form onsubmit="saveJobCard(event)">
+        <label class="form-label">Job Title</label>
+        <input type="text" id="job-title-input" class="form-input" required placeholder="e.g. Worm Gear Batch" />
+
+        <label class="form-label">Target Folder</label>
+        <select id="job-folder-select" class="form-select"></select>
+
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <label class="form-label" style="margin:0;">Operations</label>
+          <button type="button" class="chip-btn" onclick="addBuilderStep()">+ Add Operation</button>
+        </div>
+        <div id="builder-steps-container"></div>
+
+        <button type="submit" class="btn-action" style="margin-top:12px;">Save Job Card</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FOLDER CREATION -->
+  <div class="modal-overlay" id="modal-folder">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <h3 style="font-size:16px;">New Folder</h3>
+        <button class="chip-btn" onclick="closeModal('modal-folder')">✕</button>
+      </div>
+      <form onsubmit="saveFolder(event)">
+        <label class="form-label">Folder Name</label>
+        <input type="text" id="folder-name-input" class="form-input" required placeholder="e.g., TURNING DEPT" />
+        <button type="submit" class="btn-action">Create Folder</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CATEGORY CREATION -->
+  <div class="modal-overlay" id="modal-category">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <h3 style="font-size:16px;">New Category</h3>
+        <button class="chip-btn" onclick="closeModal('modal-category')">✕</button>
+      </div>
+      <form onsubmit="saveCategory(event)">
+        <label class="form-label">Category Name</label>
+        <input type="text" id="category-name-input" class="form-input" required placeholder="e.g., ⚡ Calibration" />
+        <button type="submit" class="btn-action">Create Category</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FILTERS -->
+  <div class="modal-overlay" id="modal-filter">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <h3 style="font-size:16px;">Display & Sort Filters</h3>
+        <button class="chip-btn" onclick="closeModal('modal-filter')">✕</button>
+      </div>
+
+      <label class="form-label">Sort Direction</label>
+      <select id="filter-sort-direction" class="form-select">
+        <option value="ASC">Ascending (A ➔ Z / Earliest)</option>
+        <option value="DESC">Descending (Z ➔ A / Latest)</option>
+      </select>
+
+      <label class="form-label">Sort By</label>
+      <select id="filter-sort-by" class="form-select">
+        <option value="TITLE">Title / Identifier</option>
+        <option value="DATE">Scheduled Date</option>
+      </select>
+
+      <label class="form-label">Operation Status Filter</label>
+      <select id="filter-status" class="form-select">
+        <option value="ALL">All Statuses</option>
+        <option value="Not Started">Not Started</option>
+        <option value="In Progress">In Progress</option>
+        <option value="In Hold">In Hold</option>
+        <option value="Completed">Completed</option>
+      </select>
+
+      <label class="form-label">Folder Scope</label>
+      <select id="filter-scope" class="form-select">
+        <option value="CURRENT">Current Folder Only</option>
+        <option value="ALL">All Folders (Global Matrix)</option>
+      </select>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button type="button" class="chip-btn" style="flex:1; justify-content:center; padding:12px;" onclick="resetFilters()">Reset</button>
+        <button type="button" class="btn-action" style="flex:1; margin-top:0;" onclick="applyFilters()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Universal API Endpoint (Works when hosted inside Worker or on external hosts)
+    const API_URL = window.location.origin.includes("workers.dev") ? "" : "https://project1-brain.aeijeevan.workers.dev";
+    const tg = window.Telegram?.WebApp;
+
+    // 1. EXACT USER PROFILE MAPPING
+    const USER_PROFILES = {
+      "8822239844": { phone: "+91 8660300799", name: "RAVI KUMAR" },
+      "7282532775": { phone: "+91 8748818709", name: "JEEVAN" },
+      "8545698010": { phone: "+91 9483049830", name: "SANANTH" }
+    };
+
+    let userId = "8822239844"; // Default Ravi Kumar
+    try {
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        if (tg.initDataUnsafe?.user?.id) {
+          userId = String(tg.initDataUnsafe.user.id);
+        }
+      }
+    } catch(e) {}
+
+    const activeProfile = USER_PROFILES[userId] || { phone: "+91 8660300799", name: "RAVI KUMAR" };
+    document.getElementById('diag-user').innerText = `👤 ${activeProfile.phone} (${activeProfile.name})`;
+
+    // State SSOT with Safe Defaults
+    const state = {
+      tab: 'tree',
+      scheduleSub: 'today',
+      assignee: 'ALL',
+      search: '',
+      currentFolder: 'root',
+      folders: [
+        { id: 'root', name: 'Root', parentId: null },
+        { id: 'fld-purchase', name: 'PURCHASE', parentId: 'root' },
+        { id: 'fld-sales', name: 'SALES CUSTOMER SERVICE', parentId: 'root' }
+      ],
+      jobs: [],
+      categories: [{ id: 'cat-1', name: '🚨 Overdue Operations' }],
+      filters: { sortDirection: 'ASC', sortBy: 'TITLE', status: 'ALL', scope: 'CURRENT' },
+      builderSteps: []
+    };
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast-banner');
+      t.innerText = msg;
+      t.style.background = isError ? 'var(--accent-red)' : 'var(--accent-blue)';
+      t.style.color = isError ? '#fff' : '#000';
+      t.classList.add('active');
+      setTimeout(() => t.classList.remove('active'), 3200);
+    }
+
+    // ----------------------------------------------------
+    // TOGGLES (Right-Side ^/v Controls)
+    // ----------------------------------------------------
+    let isDiagOpen = false;
+    let erudaLoaded = false;
+
+    function toggleDiagnostics() {
+      isDiagOpen = !isDiagOpen;
+      const diagBar = document.getElementById('line-diag');
+      const btn = document.getElementById('toggle-btn-diag');
+
+      if (isDiagOpen) {
+        diagBar.style.display = 'flex';
+        btn.innerText = '▴';
+        loadErudaOnDemand();
+      } else {
+        diagBar.style.display = 'none';
+        btn.innerText = '▾';
+        const erudaDom = document.getElementById('eruda');
+        if (erudaDom) erudaDom.style.display = 'none';
+        clearErudaHighlight();
+      }
+    }
+
+    function loadErudaOnDemand() {
+      if (!erudaLoaded) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/eruda';
+        s.onload = () => {
+          try {
+            eruda.init();
+            erudaLoaded = true;
+            const erudaDom = document.getElementById('eruda');
+            if (erudaDom) erudaDom.style.display = 'block';
+          } catch(e) {}
+        };
+        document.body.appendChild(s);
+      } else {
+        const erudaDom = document.getElementById('eruda');
+        if (erudaDom) erudaDom.style.display = 'block';
+      }
+    }
+
+    let isAssigneeOpen = true;
+    function toggleAssigneeRow() {
+      isAssigneeOpen = !isAssigneeOpen;
+      document.getElementById('line-assignee').style.display = isAssigneeOpen ? 'block' : 'none';
+      document.getElementById('toggle-btn-assignee').innerText = isAssigneeOpen ? '▾' : '▴';
+    }
+
+    let isScheduleSubOpen = true;
+    function toggleScheduleChips() {
+      isScheduleSubOpen = !isScheduleSubOpen;
+      document.getElementById('schedule-sub-chips').style.visibility = isScheduleSubOpen ? 'visible' : 'hidden';
+      document.getElementById('toggle-btn-sched').innerText = isScheduleSubOpen ? '▾' : '▴';
+    }
+
+    function clearErudaHighlight() {
+      document.querySelectorAll('[class*="eruda"], canvas').forEach(el => {
+        if (el.className && typeof el.className === 'string' && (el.className.includes('highlighter') || el.className.includes('highlight'))) {
+          el.remove();
+        }
+      });
+      showToast("Inspector highlight cleared");
+    }
+
+    // ----------------------------------------------------
+    // INITIALIZATION & LIVE DATA FETCH
+    // ----------------------------------------------------
+    renderAll();
+    fetchLive();
+
+    async function fetchLive() {
+      const diagStatus = document.getElementById('diag-status');
+      try {
+        diagStatus.innerText = "STATUS: SYNCING...";
+        const res = await fetch(`${API_URL}/api/data?t=${Date.now()}`, {
+          headers: {
+            'X-Telegram-User-Id': userId,
+            'X-Telegram-Init-Data': tg?.initData || ''
+          }
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          diagStatus.innerText = `HTTP ${res.status}: ${res.status === 403 ? 'NOT AUTHORIZED' : 'ERROR'}`;
+          diagStatus.style.color = 'var(--accent-red)';
+          return;
+        }
+
+        const data = await res.json();
+        if (data.folders && Array.isArray(data.folders)) {
+          state.folders = [{ id: 'root', name: 'Root', parentId: null }, ...data.folders];
+        }
+        if (data.jobCards && Array.isArray(data.jobCards)) {
+          state.jobs = data.jobCards;
+        }
+
+        diagStatus.innerText = "STATUS: ONLINE (SSOT)";
+        diagStatus.style.color = 'var(--accent-green)';
+        renderAll();
+      } catch (err) {
+        diagStatus.innerText = "STATUS: LOCAL FALLBACK";
+        diagStatus.style.color = 'var(--accent-amber)';
+      }
+    }
+
+    // ----------------------------------------------------
+    // SEARCH & FILTER ENGINE
+    // ----------------------------------------------------
+    function handleSearch(val) {
+      state.search = val.toLowerCase().trim();
+      document.getElementById('search-clear-btn').style.display = state.search ? 'block' : 'none';
+      renderAll();
+    }
+
+    function clearSearch() {
+      document.getElementById('global-search-input').value = '';
+      state.search = '';
+      document.getElementById('search-clear-btn').style.display = 'none';
+      renderAll();
+    }
+
+    function openFilterModal() {
+      document.getElementById('filter-sort-direction').value = state.filters.sortDirection;
+      document.getElementById('filter-sort-by').value = state.filters.sortBy;
+      document.getElementById('filter-status').value = state.filters.status;
+      document.getElementById('filter-scope').value = state.filters.scope;
+      openModal('modal-filter');
+    }
+
+    function applyFilters() {
+      state.filters.sortDirection = document.getElementById('filter-sort-direction').value;
+      state.filters.sortBy = document.getElementById('filter-sort-by').value;
+      state.filters.status = document.getElementById('filter-status').value;
+      state.filters.scope = document.getElementById('filter-scope').value;
+      closeModal('modal-filter');
+      showToast("Filters applied");
+      renderAll();
+    }
+
+    function resetFilters() {
+      state.filters = { sortDirection: 'ASC', sortBy: 'TITLE', status: 'ALL', scope: 'CURRENT' };
+      closeModal('modal-filter');
+      renderAll();
+    }
+
+    // ----------------------------------------------------
+    // NAVIGATION CONTROLS
+    // ----------------------------------------------------
+    function switchTab(t) {
+      state.tab = t;
+      document.querySelectorAll('.primary-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+
+      document.getElementById(`tab-btn-${t}`).classList.add('active');
+      document.getElementById(`page-${t}`).classList.add('active');
+      document.getElementById('line-schedule-sub').style.display = (t === 'schedule') ? 'flex' : 'none';
+
+      renderAll();
+    }
+
+    function setScheduleSub(sub, el) {
+      state.scheduleSub = sub;
+      document.querySelectorAll('#schedule-sub-chips .chip-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderSchedule();
+    }
+
+    function setAssignee(assignee, el) {
+      state.assignee = assignee;
+      document.querySelectorAll('#assignee-filter-bar .chip-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderAll();
+    }
+
+    function renderAll() {
+      renderTree();
+      renderSchedule();
+      renderOthers();
+    }
+
+    // ----------------------------------------------------
+    // TREE TAB
+    // ----------------------------------------------------
+    function renderTree() {
+      const container = document.getElementById('tree-container');
+      const breadcrumbs = document.getElementById('tree-breadcrumbs');
+      if (!container || !breadcrumbs) return;
+
+      container.innerHTML = '';
+
+      const path = getFolderPath(state.currentFolder);
+      breadcrumbs.innerHTML = path.map((f, idx) => `
+        <span class="breadcrumb-item" onclick="navigateToFolder('${f.id}')">${f.name}</span>
+        ${idx < path.length - 1 ? '<span style="color:#555;">➔</span>' : ''}
+      `).join('');
+
+      let flds = state.folders.filter(f => f.parentId === state.currentFolder && f.id !== 'root');
+      let jbs = state.jobs.filter(j => !j.isArchived);
+
+      if (state.filters.scope === 'CURRENT') {
+        jbs = jbs.filter(j => j.folderId === state.currentFolder);
+      }
+
+      if (state.assignee !== 'ALL') {
+        jbs = jbs.filter(j => (j.steps || []).some(s => s.assignee === state.assignee));
+      }
+
+      if (state.search) {
+        flds = state.folders.filter(f => f.id !== 'root' && f.name.toLowerCase().includes(state.search));
+        jbs = state.jobs.filter(j => !j.isArchived && (
+          (j.title || '').toLowerCase().includes(state.search) ||
+          (j.steps || []).some(s => (s.title || '').toLowerCase().includes(state.search) || (s.notes && s.notes.toLowerCase().includes(state.search)))
+        ));
+      }
+
+      jbs.sort((a, b) => {
+        let res = (a.title || '').localeCompare(b.title || '');
+        return state.filters.sortDirection === 'ASC' ? res : -res;
+      });
+
+      flds.forEach(f => {
+        container.innerHTML += `
+          <div class="card-item" onclick="navigateToFolder('${f.id}')">
+            <div class="job-header">
+              <span class="item-title">📁 ${f.name}</span>
+              <span style="color:var(--text-muted);">➔</span>
+            </div>
+          </div>`;
+      });
+
+      jbs.forEach(j => {
+        let steps = [...(j.steps || [])];
+        if (state.assignee !== 'ALL') {
+          steps = steps.filter(s => s.assignee === state.assignee);
+        }
+        if (state.filters.status !== 'ALL') {
+          steps = steps.filter(s => s.status === state.filters.status);
+        }
+
+        steps.sort((a, b) => (a.status === 'Completed') - (b.status === 'Completed'));
+
+        container.innerHTML += `
+          <div class="card-item">
+            <div class="job-header" onclick="toggleExpand('job-${j.id}')">
+              <span class="item-title">⚙️ ${j.title}</span>
+              <span id="arr-job-${j.id}" style="color:var(--accent-blue); font-weight:bold;">v</span>
+            </div>
+            <div class="step-list" id="steps-job-${j.id}">
+              ${steps.map(s => renderStepHTML(s, j)).join('')}
+            </div>
+          </div>`;
+      });
+
+      if (flds.length === 0 && jbs.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">No items in this directory.</div>`;
+      }
+    }
+
+    function navigateToFolder(fId) {
+      state.currentFolder = fId;
+      renderAll();
+    }
+
+    function getFolderPath(folderId) {
+      const p = [];
+      let cur = state.folders.find(f => f.id === folderId);
+      while (cur) {
+        p.unshift(cur);
+        cur = state.folders.find(f => f.id === cur.parentId);
+      }
+      return p.length ? p : [{ id: 'root', name: 'Root' }];
+    }
+
+    // ----------------------------------------------------
+    // SCHEDULE TAB
+    // ----------------------------------------------------
+    function renderSchedule() {
+      const c = document.getElementById('schedule-container');
+      if (!c) return;
+      c.innerHTML = '';
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const ops = [];
+
+      state.jobs.filter(j => !j.isArchived).forEach(j => {
+        (j.steps || []).forEach(s => {
+          if (state.assignee !== 'ALL' && s.assignee !== state.assignee) return;
+          if (state.filters.status !== 'ALL' && s.status !== state.filters.status) return;
+          if (state.search && !(s.title || '').toLowerCase().includes(state.search) && !(j.title || '').toLowerCase().includes(state.search)) return;
+
+          if (state.scheduleSub === 'today' && s.date === todayStr) {
+            ops.push({ step: s, job: j });
+          } else if (state.scheduleSub === 'deadline' && s.date) {
+            ops.push({ step: s, job: j });
+          } else if (state.scheduleSub === 'queue') {
+            ops.push({ step: s, job: j });
+          }
+        });
+      });
+
+      if (state.scheduleSub === 'deadline') {
+        ops.sort((a, b) => (a.step.date || '').localeCompare(b.step.date || ''));
+      }
+
+      ops.forEach(({ step, job }) => {
+        c.innerHTML += `
+          <div class="card-item">
+            <div style="font-size:10px; color:var(--accent-purple); font-weight:bold; margin-bottom:4px;">JOB: ${job.title}</div>
+            ${renderStepHTML(step, job)}
+          </div>`;
+      });
+
+      if (ops.length === 0) {
+        c.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">No scheduled operations found.</div>`;
+      }
+    }
+
+    // ----------------------------------------------------
+    // OTHERS TAB
+    // ----------------------------------------------------
+    function renderOthers() {
+      const c = document.getElementById('others-container');
+      if (!c) return;
+      c.innerHTML = state.categories.map(cat => `
+        <div class="card-item">
+          <div class="job-header">
+            <span class="item-title">${cat.name}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // ----------------------------------------------------
+    // STEP HTML & QUICK STATUS CYCLE
+    // ----------------------------------------------------
+    function renderStepHTML(step, job) {
+      const sc = `status-${(step.status || '').toLowerCase().replace(/\s/g, '')}`;
+      return `
+        <div class="step-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; font-weight:600;">${step.title}</span>
+            <span class="badge-status ${sc}" onclick="cycleStep('${step.id}')">${step.status}</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+            👤 ${step.assignee} ${step.date ? `| 📅 ${step.date}` : ''}
+          </div>
+        </div>`;
+    }
+
+    function toggleExpand(id) {
+      const el = document.getElementById(`steps-${id}`);
+      const arr = document.getElementById(`arr-${id}`);
+      if (!el) return;
+      if (el.classList.contains('collapsed')) {
+        el.classList.remove('collapsed');
+        if (arr) arr.innerText = 'v';
+      } else {
+        el.classList.add('collapsed');
+        if (arr) arr.innerText = '^';
+      }
+    }
+
+    function cycleStep(stepId) {
+      const seq = ['Not Started', 'In Progress', 'In Hold', 'Completed'];
+      for (const j of state.jobs) {
+        const s = (j.steps || []).find(st => st.id === stepId);
+        if (s) {
+          s.status = seq[(seq.indexOf(s.status) + 1) % seq.length];
+          renderAll();
+          fetch(`${API_URL}/api/steps`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Telegram-User-Id': userId },
+            body: JSON.stringify({ stepId: s.id, status: s.status })
+          }).catch(()=>{});
+          break;
+        }
+      }
+    }
+
+    // ----------------------------------------------------
+    // MODALS ENGINE
+    // ----------------------------------------------------
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function openFolderModal() {
+      document.getElementById('folder-name-input').value = '';
+      openModal('modal-folder');
+    }
+
+    function saveFolder(e) {
+      e.preventDefault();
+      const name = document.getElementById('folder-name-input').value.trim();
+      if (!name) return;
+      const newFolder = { id: `FLD-${Date.now()}`, name, parentId: state.currentFolder };
+      state.folders.push(newFolder);
+      closeModal('modal-folder');
+      renderAll();
+      showToast("Folder Created");
+
+      fetch(`${API_URL}/api/folders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Telegram-User-Id': userId },
+        body: JSON.stringify(newFolder)
+      }).catch(()=>{});
+    }
+
+    function openCategoryModal() {
+      document.getElementById('category-name-input').value = '';
+      openModal('modal-category');
+    }
+
+    function saveCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('category-name-input').value.trim();
+      if (!name) return;
+      state.categories.push({ id: `cat-${Date.now()}`, name });
+      closeModal('modal-category');
+      renderOthers();
+      showToast("Category Added");
+    }
+
+    function openJobModal() {
+      const fs = document.getElementById('job-folder-select');
+      fs.innerHTML = state.folders.map(f => `<option value="${f.id}" ${f.id === state.currentFolder ? 'selected' : ''}>${f.name}</option>`).join('');
+      state.builderSteps = [{ id: '', title: '', assignee: 'UNASSIGNED', status: 'Not Started', date: '' }];
+      renderBuilderSteps();
+      openModal('modal-job');
+    }
+
+    function addBuilderStep() {
+      state.builderSteps.push({ id: '', title: '', assignee: 'UNASSIGNED', status: 'Not Started', date: '' });
+      renderBuilderSteps();
+    }
+
+    function renderBuilderSteps() {
+      const c = document.getElementById('builder-steps-container');
+      c.innerHTML = state.builderSteps.map((s, idx) => `
+        <div class="step-card" style="margin-bottom:8px;">
+          <input type="text" class="form-input" placeholder="Operation Title (e.g. CNC Turning)" value="${s.title}" oninput="state.builderSteps[${idx}].title=this.value" required />
+          <div style="display:flex; gap:6px;">
+            <select class="form-select" onchange="state.builderSteps[${idx}].assignee=this.value">
+              <option value="UNASSIGNED">UNASSIGNED</option>
+              <option value="JEEVAN">JEEVAN</option>
+              <option value="RAVI KUMAR">RAVI KUMAR</option>
+              <option value="SANANTH">SANANTH</option>
+            </select>
+            <input type="date" class="form-input" value="${s.date}" onchange="state.builderSteps[${idx}].date=this.value" />
+          </div>
+        </div>`).join('');
+    }
+
+    function saveJobCard(e) {
+      e.preventDefault();
+      const title = document.getElementById('job-title-input').value.trim();
+      const folderId = document.getElementById('job-folder-select').value;
+      const newJob = {
+        id: `JOB-${Date.now()}`,
+        title,
+        folderId,
+        isArchived: false,
+        steps: state.builderSteps.map((s, i) => ({
+          ...s,
+          id: `STP-${Date.now()}-${i}`
+        }))
+      };
+
+      state.jobs.push(newJob);
+      closeModal('modal-job');
+      renderAll();
+      showToast("Job Card Saved");
+
+      fetch(`${API_URL}/api/jobcards`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Telegram-User-Id': userId },
+        body: JSON.stringify(newJob)
+      }).catch(()=>{});
+    }
+  </script>
+</body>
+</html>
